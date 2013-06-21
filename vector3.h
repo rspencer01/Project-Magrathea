@@ -16,6 +16,7 @@ class Vector3
 		Vector3 operator*(float);
 		float dot(Vector3);
 		float norm();
+		float getDimension(int);
 		void normalise();
 };
 

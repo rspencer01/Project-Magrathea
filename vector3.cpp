@@ -69,3 +69,12 @@ void Vector3::normalise()
 	y/=n;
 	z/=n;
 }
+
+float Vector3::getDimension(int d)
+{
+	if (d==0)
+		return x;
+	if (d==1)
+		return y;
+	return z;
+}
