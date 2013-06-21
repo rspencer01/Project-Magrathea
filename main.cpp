@@ -158,9 +158,9 @@ void keyOperations(void)
 		camera->RotateX(DownlookDist);
 	}
 	if (keyStates['w'])
-		camera->MoveForward((GLfloat)((fp?-0.1:-1.0) * speed ));
+		camera->MoveForward((GLfloat)(0.1* speed );
 	if (keyStates['s'])
-		camera->MoveForward((GLfloat)((fp?0.1:1.0) * speed));
+		camera->MoveForward((GLfloat)(0.1* speed );
 	if (keyStates['q'])
 	{
 		DownlookDist += 0.75;		
