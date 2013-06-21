@@ -9,6 +9,7 @@
 #include "camera.h"
 #include "world.h"
 #include "misc.h"
+#include "sky.h"
 
 void display(void);
 void reshape(int,int);
@@ -80,8 +81,11 @@ void display(void)
 	resetStats();
 	
 	glMatrixMode(GL_MODELVIEW);
+	
 	camera->Render();
+	RenderSky(camera->GetX(),camera->GetZ());
 	Island->Render(camera->GetX(),camera->GetZ());
+	
 	drawFPS();
 	writeString(10, 80,"Camera Position: %.2f %.2f %.2f",camera->GetX(),camera->GetY(),camera->GetZ());
 	displayHUD();
