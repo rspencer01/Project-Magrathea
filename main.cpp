@@ -63,8 +63,14 @@ int main(int argc, char**argv)
 	
 	Island = new World(WORLD_SIZE);
 
+	glFogi(GL_FOG_MODE,GL_LINEAR);
+	glFogfv(GL_FOG_COLOR,skyColor);
+	glFogf(GL_FOG_DENSITY,0.05f);
+	glHint(GL_FOG_HINT, GL_DONT_CARE);          // Fog Hint Value
+	glFogf(GL_FOG_START, 300.f);             // Fog Start Depth
+	glFogf(GL_FOG_END, 500.0f); 
 
-		
+	glEnable(GL_FOG); 
 	
 	glutMainLoop();
 }

@@ -4,8 +4,11 @@
 // An ill named header class that contains things everyone shoud know
 #include "vector3.h"
 #include <algorithm>
+#include <GL/glut.h>
 
 #define WORLD_SIZE (1024)
+
+const GLfloat skyColor[4]= {0.63671875f, 0.94140625f, 1.f, 1.0f}; 
 
 //Surface bit
 struct sbit
