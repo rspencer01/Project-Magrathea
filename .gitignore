@@ -1,0 +1,17 @@
+*.raw
+*.exe
+*.o
+*.vcxproj*
+*.sdf
+*.sln
+*.suo
+*.prj
+*.jpg
+*.pui
+*.bmp
+v*/
+Shamus/
+OpenGL-tutorial_v0012_33/
+Debug/
+Images/
+ipch/
