@@ -37,6 +37,16 @@ float cosineInterpolate(float x1,float x2,float t)
 	return (1.0-x)*x1+x*x2;
 }
 
+//Scribes a cubic through the points.  X is fraction between v2 and v3
+float cubicInterpolate(float v1,float v2,float v3,float v4,float x)
+{
+	float A = v4 - v3 - v1 + v2;
+	float B = v1 - v2 - A;
+	float C = v3 - v1;
+	float D = v2;
+	return A*x*x*x + B*x*x + C*x + D;
+}
+
 float changeContrast(float value,float contrast)
 {
 	if (value >= 0.5f)

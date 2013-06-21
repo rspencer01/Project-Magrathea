@@ -14,5 +14,6 @@ g++ -ggdb vector3.cpp -c -I"C:\Program Files\Common Files\MinGW\freeglut\include
 g++ -ggdb page.cpp -c -I"C:\Program Files\Common Files\MinGW\freeglut\include" -o page.o
 g++ -ggdb book.cpp -c -I"C:\Program Files\Common Files\MinGW\freeglut\include" -o book.o
 g++ -ggdb grass.cpp -c -I"C:\Program Files\Common Files\MinGW\freeglut\include" -o grass.o
+g++ -ggdb sky.cpp -c -I"C:\Program Files\Common Files\MinGW\freeglut\include" -o sky.o
 
-g++  -o a.exe main.o graphics.o region.o camera.o terrain.o world.o heightMap.o misc.o textures.o noise.o erosion.o biome.o vector3.o page.o book.o grass.o -L"C:\Program Files\Common Files\MinGW\freeglut\lib" -lfreeglut -lopengl32 -lglu32
+g++  -o a.exe main.o graphics.o region.o camera.o terrain.o world.o heightMap.o misc.o textures.o noise.o erosion.o biome.o vector3.o page.o book.o grass.o sky.o -L"C:\Program Files\Common Files\MinGW\freeglut\lib" -lfreeglut -lopengl32 -lglu32
