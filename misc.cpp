@@ -40,9 +40,9 @@ float cosineInterpolate(float x1,float x2,float t)
 //Scribes a cubic through the points.  X is fraction between v2 and v3
 float cubicInterpolate(float v1,float v2,float v3,float v4,float x)
 {
-	float A = v4 - v3 - v1 + v2;
-	float B = v1 - v2 - A;
-	float C = v3 - v1;
+	float A = -0.5*v1 + 1.5*v2 - 1.5*v3 + 0.5*v4;
+	float B = v1 - 2.5*v2 + 2*v3 - 0.5*v4;
+	float C = -0.5*v1+0.5*v3;
 	float D = v2;
 	return A*x*x*x + B*x*x + C*x + D;
 }
