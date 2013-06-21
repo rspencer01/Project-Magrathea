@@ -41,12 +41,12 @@ float changeContrast(float value,float contrast)
 {
 	if (value >= 0.5f)
 	{
-		float x = pow((value - 0.5f)*2,1.0-contrast);
+		float x = pow((value - 0.5f)*2,1.f-contrast);
 		return 0.5f+ x/2.f;
 	}
 	else
 	{
-		float x = pow((0.5f-value)*2,1.0-contrast);
+		float x = pow((0.5f-value)*2,1.f-contrast);
 		return 0.5f - x/2.f;
 	}
 }
