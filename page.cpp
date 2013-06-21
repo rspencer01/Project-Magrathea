@@ -37,10 +37,10 @@ void page::updateTo(int value)
 		DoColour();
 	if (value&PS_NORMALS&(~state))
 		DoNormals();
-	if (value&PS_GRASS&(~state))
-		DoGrass();
 	if (value&PS_SURFACE&(~state))
 		DoSurface();
+	if (value&PS_GRASS&(~state))
+		DoGrass();
 	lastTouched = (int)time(NULL);	
 }
 
@@ -89,11 +89,12 @@ void page::DoGrass()
 		{
 			if (data[y][x].elevation > data[y][x].waterLevel)
 				if (parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->climate != CL_COASTAL)
-					if (rand()%100 <= parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->grassiness*100.0)
-					{
-						data[y][x].isGrass = true;
-						data[y][x].grassHeight = parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->grassHeight;
-					}
+					if (data[y][x].surfaceType == SURFACE_GRASS)
+						if (rand()%100 <= parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->grassiness*100.0)
+						{
+							data[y][x].isGrass = true;
+							data[y][x].grassHeight = parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->grassHeight;
+						}
 		}
 	state = state | PS_GRASS;
 }
@@ -103,6 +104,7 @@ void page::DoSurface()
 	for (int y = 0;y<PAGE_SIZE;y++)
 		for (int x = 0;x<PAGE_SIZE;x++)
 		{
+			data[y][x].surfaceType = SURFACE_GRASS;
 			//Todo.  Split into cases
 			if (parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->baseLevel > 0)
 			{
@@ -117,8 +119,8 @@ void page::DoSurface()
 			float dirtCutoff = 0.95;
 			if (parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->climate == CL_TUNDRA)
 				rockCutoff = 0.95;
-			if (data[y][x].normal->y < dirtCutoff)
-				data[y][x].surfaceType = SURFACE_DIRT;
+			//if (data[y][x].normal->y < dirtCutoff)
+			//	data[y][x].surfaceType = SURFACE_DIRT;
 			if (data[y][x].normal->y < rockCutoff)
 				data[y][x].surfaceType = SURFACE_ROCK;
 			if (data[y][x].elevation <data[y][x].waterLevel)
