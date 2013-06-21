@@ -113,10 +113,12 @@ void page::DoSurface()
 			}
 			else
 				data[y][x].surfaceType = SURFACE_SAND;	
-			float rockCutoff = 0.9;
+			float rockCutoff = 0.92;
+			float dirtCutoff = 0.95;
 			if (parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->climate == CL_TUNDRA)
-				rockCutoff = 0.5;
-
+				rockCutoff = 0.95;
+			if (data[y][x].normal->y < dirtCutoff)
+				data[y][x].surfaceType = SURFACE_DIRT;
 			if (data[y][x].normal->y < rockCutoff)
 				data[y][x].surfaceType = SURFACE_ROCK;
 			if (data[y][x].elevation <data[y][x].waterLevel)
