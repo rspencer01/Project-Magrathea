@@ -2,7 +2,7 @@
 *.exe
 *.o
 *.vcxproj*
-*.sdf
+*sdf
 *.sln
 *.suo
 *.prj
