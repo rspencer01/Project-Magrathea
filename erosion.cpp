@@ -51,16 +51,13 @@ float getErosionDatai(int x,int y)
 
 float getErosionData(float x,float y)
 {
-	//We want x,y positive
-	x = abs(x);y = abs(y);
-	int ix = (int)x;
-	int iy = (int)y;
-	float fx = x - (float)ix;
-	float fy = y - (float)iy;
-	float result = cosineInterpolate(cosineInterpolate(getErosionDatai(ix,iy),getErosionDatai(ix+1,iy),fx),
-							 cosineInterpolate(getErosionDatai(ix,iy+1),getErosionDatai(ix+1,iy+1),fx),
-							 fy);
-	return result;
+	float data[4][5];
+	for (int i = 0;i<4;i++)
+		for (int j = 0;j<4;j++)
+			data[i][j] = getErosionDatai((int)x+i-1,(int)y+j-1);
+	for (int i = 0;i<4;i++)
+		data[i][4] = cubicInterpolate(data[i][0],data[i][1],data[i][2],data[i][3],y-(int)y);
+	return cubicInterpolate(data[0][4],data[1][4],data[2][4],data[3][4],x-(int)x);
 }
 
 void erode(float* data,int size)
@@ -84,7 +81,7 @@ void erode(float* data,int size)
 	float* buffer = new float[size * size];
   memcpy (buffer, data, sizeof (float) * size * size);
 	
-	for (int pass = 0;pass<2;pass++)
+	for (int pass = 0;pass<0;pass++)
 	{
 		for (int y = 0;y<size;y++)
 			for (int x = 0;x<size;x++)

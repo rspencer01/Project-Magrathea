@@ -108,6 +108,19 @@ biomeSystem::biomeSystem()
 																biomes[i][j].detail+biomes[i][j-1].detail+biomes[i][j+1].detail+
 																biomes[i+1][j].detail+biomes[i+1][j-1].detail+biomes[i+1][j+1].detail)/9.0f;		
 		}
+	float mn = biomes[0][0].topography;
+	float mx = biomes[0][0].topography;
+	for(int i = 1;i<sizeInBiomes-1;i++)
+		for(int j = 1;j<sizeInBiomes-1;j++)	
+		{
+			mn = min(mn,biomes[i][j].topography);
+			mx = max(mn,biomes[i][j].topography);
+		}
+	mx *= 0.99f;
+	for(int i = 1;i<sizeInBiomes-1;i++)
+		for(int j = 1;j<sizeInBiomes-1;j++)	
+			biomes[i][j].topography = 1.f;//(biomes[i][j].topography-mn)/(mx-mn);
+
 	FILE* biomeImage = fopen("biomes.raw","wb");
 	unsigned char* data = new unsigned char[sizeInBiomes*sizeInBiomes*3];
 	for(int i = 0;i<sizeInBiomes;i++)

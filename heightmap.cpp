@@ -50,14 +50,17 @@ float heightMap::getAt(int y,int x)
 	float fy = (y%bs)/float(bs);
 
 	
-	float detail = (linearInterpolate(linearInterpolate(bd->detail,bd2->detail,fy),linearInterpolate(bd3->detail,bd4->detail,fy),fx));
-	detail = 5*detail*changeContrast(getErosionData(float(x),float(y)),detail*detail);
+	/*float detail = (linearInterpolate(linearInterpolate(bd->detail,bd2->detail,fy),linearInterpolate(bd3->detail,bd4->detail,fy),fx));
+	detail = 0*5*detail*changeContrast(getErosionData(float(x),float(y)),detail*detail);
+	*/
+	float terrain = (linearInterpolate(linearInterpolate(bd->topography,bd2->topography,fy),linearInterpolate(bd3->topography,bd4->topography,fy),fx));
+	terrain = 140*1*changeContrast(getErosionData(float(x/10.f),float(y/10.f)),0.f);
 	
-	if (bd->flags & BIOME_FLAG_CRACKS)
+	/*if (bd->flags & BIOME_FLAG_CRACKS)
 		if (detail>4.8 && detail<5.4)
 			detail = -detail;
-	
-	float terrain = 50*getErosionData(float(x)/8,float(y)/8)*(linearInterpolate(linearInterpolate(bd->topography,bd2->topography,fy),linearInterpolate(bd3->topography,bd4->topography,fy),fx));
-	float bias = 70*(cosineInterpolate(cosineInterpolate(bd->baseLevel,bd2->baseLevel,fy),cosineInterpolate(bd3->baseLevel,bd4->baseLevel,fy),fx));
-	return  detail+bias;
+	*/
+	//float terrain = 50*getErosionData(float(x)/8,float(y)/8)*(linearInterpolate(linearInterpolate(bd->topography,bd2->topography,fy),linearInterpolate(bd3->topography,bd4->topography,fy),fx));
+	float bias = 0*70*(cosineInterpolate(cosineInterpolate(bd->baseLevel,bd2->baseLevel,fy),cosineInterpolate(bd3->baseLevel,bd4->baseLevel,fy),fx));
+	return  terrain;
 }
