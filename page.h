@@ -12,9 +12,8 @@
 #define PS_ELEVATIONS      0x03
 #define PS_COLOUR          0x05
 #define PS_NORMALS         0x0B
-#define PS_GRASS           0x13
-#define PS_SURFACE         0x2B
-
+#define PS_SURFACE         0x1B
+#define PS_GRASS           0x33
 
 class page;
 
