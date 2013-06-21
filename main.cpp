@@ -78,7 +78,7 @@ int main(int argc, char**argv)
 void display(void)
 {
 	keyOperations();
-	glClearColor(0.1f,1.0f,1.0f,1.f);
+	glClearColor (skyColor[0],skyColor[1],skyColor[2],skyColor[3]);
 	
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	
