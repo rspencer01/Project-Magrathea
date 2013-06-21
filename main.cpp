@@ -60,6 +60,8 @@ int main(int argc, char**argv)
 	//camera->SetY(800);
 	//camera->RotateY(-90);
 	//camera->RotateX(-90);
+	for (int i = 0;i<256;i++)
+		keyStates[i] = false;
 	
 	Island = new World(WORLD_SIZE);
 
