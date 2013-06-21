@@ -88,11 +88,12 @@ void page::DoGrass()
 		for (int x = 0;x<PAGE_SIZE;x++)
 		{
 			if (data[y][x].elevation > data[y][x].waterLevel)
-				if (rand()%100 <= parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->grassiness*100.0)
-				{
-					data[y][x].isGrass = true;
-					data[y][x].grassHeight = parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->grassHeight;
-				}
+				if (parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->climate != CL_COASTAL)
+					if (rand()%100 <= parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->grassiness*100.0)
+					{
+						data[y][x].isGrass = true;
+						data[y][x].grassHeight = parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->grassHeight;
+					}
 		}
 	state = state | PS_GRASS;
 }
