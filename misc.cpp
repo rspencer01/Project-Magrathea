@@ -36,11 +36,17 @@ float cosineInterpolate(float x1,float x2,float t)
 	float x = (1.0-cos(t*3.141592))/2.0;
 	return (1.0-x)*x1+x*x2;
 }
-/*
-float tripleInterpolate(float x1,float x2, float x2, float t)
+
+float changeContrast(float value,float contrast)
 {
-	if (t<1)
-		return cosineInterpolate(x1,x2,t);
-	return cosineInterpolate(x2,x3,t-1.0);
+	if (value >= 0.5f)
+	{
+		float x = pow((value - 0.5f)*2,1.0-contrast);
+		return 0.5f+ x/2.f;
+	}
+	else
+	{
+		float x = pow((0.5f-value)*2,1.0-contrast);
+		return 0.5f - x/2.f;
+	}
 }
-*/
