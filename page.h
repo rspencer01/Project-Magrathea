@@ -4,8 +4,8 @@
 #include "magrathea.h"
 
 //This must be carfully chosen to divide WORLDSIZE/2
-#define PAGE_SIZE 128
-#define PAGE_EXPIRE_TIME 100
+#define PAGE_SIZE        256
+#define PAGE_EXPIRE_TIME 1000
 
 #define PS_UNINITIALISED   0x00
 #define PS_INITIALISED     0x01
