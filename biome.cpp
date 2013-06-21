@@ -7,6 +7,7 @@ using namespace std;
 #include "biome.h"
 #include <math.h>
 #include "noise.h"
+#include "misc.h"
 
 #define BIGSCALENUMBER 10
 
@@ -69,9 +70,9 @@ biomeSystem::biomeSystem()
 			}
 			if (biomes[i][j].climate==CL_JUNGLE)
 			{
-				biomes[i][j].grassColor[0] = 5;
-				biomes[i][j].grassColor[1] = 81;
-				biomes[i][j].grassColor[2] = 5;
+				biomes[i][j].grassColor[0] = linearInterpolate(5,182,1-biomes[i][j].moisture );
+				biomes[i][j].grassColor[1] = linearInterpolate(81,142,1-biomes[i][j].moisture );
+				biomes[i][j].grassColor[2] = linearInterpolate(5,48,1-biomes[i][j].moisture );
 			}
 			if (biomes[i][j].climate==CL_TUNDRA)
 			{
