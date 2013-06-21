@@ -2,7 +2,7 @@
 #define TERRAIN_H
 
 #include <GL/glut.h>
-#include "magnathea.h"
+#include "magrathea.h"
 #include "vector3.h"
 #include "biome.h"
 #include "world.h"

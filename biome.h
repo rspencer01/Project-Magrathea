@@ -1,7 +1,7 @@
 #ifndef BIOME_H
 #define BIOME_H
 
-#include "magnathea.h"
+#include "magrathea.h"
 
 #define BIOME_FLAG_CRACKS 1
 

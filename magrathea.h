@@ -1,5 +1,5 @@
-#ifndef MAGNATHEA_H
-#define MAGNATHEA_H
+#ifndef MAGRATHEA_H
+#define MAGRATHEA_H
 
 // An ill named header class that contains things everyone shoud know
 #include "vector3.h"

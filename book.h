@@ -3,7 +3,7 @@
 
 class book;
 
-#include "magnathea.h"
+#include "magrathea.h"
 #include "page.h"
 
 #define PAGE_COUNT (WORLD_SIZE/PAGE_SIZE + 1)

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "magnathea.h"
+#include "magrathea.h"
 #include "graphics.h"
 #include "camera.h"
 #include "world.h"

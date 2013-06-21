@@ -1,7 +1,7 @@
 #ifndef GRASS_H
 #define GRASS_H
 
-#include "magnathea.h"
+#include "magrathea.h"
 #include "vector3.h"
 class grass;
 #include "world.h"

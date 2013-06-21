@@ -1,7 +1,7 @@
 #ifndef PAGE_H
 #define PAGE_H
 
-#include "magnathea.h"
+#include "magrathea.h"
 
 //This must be carfully chosen to divide WORLDSIZE/2
 #define PAGE_SIZE 128

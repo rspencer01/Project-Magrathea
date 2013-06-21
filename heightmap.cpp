@@ -1,4 +1,4 @@
-#include "magnathea.h"
+#include "magrathea.h"
 #include "heightmap.h"
 #include "misc.h"
 #include "noise.h"

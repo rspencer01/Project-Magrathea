@@ -5,7 +5,7 @@ class region;
 class World;
 #include <vector>
 using namespace std;
-#include "magnathea.h"
+#include "magrathea.h"
 #include "terrain.h"
 #include "world.h"
 #include "vector3.h"
