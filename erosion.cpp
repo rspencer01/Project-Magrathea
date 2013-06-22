@@ -7,6 +7,8 @@
 #include "erosion.h"
 #include <stdlib.h>
 #include <assert.h>
+#include <algorithm>
+using namespace std;
 
 #define EROSION_SIZE 256
 
@@ -16,18 +18,20 @@ inline float abs(float a)
 }
 float* erosionData;
 
+void entropy_erode(float*);
+
 void initErosion()
 {
 	erosionData = new float[EROSION_SIZE*EROSION_SIZE];
 	unsigned char* data = loadRaw("erode.raw",EROSION_SIZE);
 	for (int i = 0;i<EROSION_SIZE;i++)
 		for (int j = 0;j<EROSION_SIZE;j++)
-			erosionData[i*EROSION_SIZE+j] = perlinNoise(float(i*0.2f)/EROSION_SIZE,float(j*0.2f)/EROSION_SIZE,9,0.95f);
-	erode(erosionData,EROSION_SIZE);
+			erosionData[i*EROSION_SIZE+j] = data[(i*EROSION_SIZE+j)*3]/256.0;
+	entropy_erode(erosionData);
 	FILE* result = fopen("eroded.raw","wb");
 	for (int i = 0;i<EROSION_SIZE*EROSION_SIZE;i++)
 	{
-		fprintf(result,"%c%c%c",char(256.0*erosionData[i]),char(256.0*erosionData[i]),char(256.0*erosionData[i]));
+		fprintf(result,"%c%c%c",char(255.0*erosionData[i]),char(255.0*erosionData[i]),char(255.0*erosionData[i]));
 	}
 	fclose(result);
 	delete[] data;
@@ -60,92 +64,116 @@ float getErosionData(float x,float y)
 	return cubicInterpolate(data[0][4],data[1][4],data[2][4],data[3][4],x-(int)x);
 }
 
-void erode(float* data,int size)
+void entropy_erode (float* emap)
 {
-  float min = data[0];
-  float max = data[0];
-  for (int y = 0; y < size; y++) 
-    for (int x = 0; x < size; x++)
-    {
-      if (data[getIndex(y,x)]>min) 
-        min = data[getIndex(y,x)];
-	  if (data[getIndex(y,x)]<max)
-		max = data[getIndex(y,x)];
-	}
-  for (int y = 0; y < size; y++) 
-    for (int x = 0; x < size; x++)
-      data[getIndex(y,x)] = (data[getIndex(y,x)]-min)/(max-min);
 
+  float*  buffer;
+  int     x, y;
+  float   low, high, val;
+  int currentx,currenty;
+  int low_indexx,low_indexy, high_indexx, high_indexy;
+  int nx,ny;
+  int     index;
+  int     count;
 
+  buffer = new float[EROSION_SIZE * EROSION_SIZE];
+  memcpy (buffer, emap, sizeof (float) * EROSION_SIZE * EROSION_SIZE);
+  //Pass over the entire map, dropping a "raindrop" on each point. Trace
+  //a path downhill until the drop hits bottom. Subtract elevation
+  //along the way.  Makes natural hells from handmade ones. Super effective.
+  for (int pass = 0; pass < 4; pass++) {
+    for (y = 0; y < EROSION_SIZE; y++) {
+      for (x = 0; x < EROSION_SIZE; x++) {
+        low = high = buffer[x + y * EROSION_SIZE];
+        currentx = x;
+        currenty = y;
+        low_indexx = high_indexx = currentx;
+        low_indexy = high_indexy = currenty;
+        while (1) {
+          //look for neighbors lower than this point
+          for (nx = currentx - 1; nx <= currentx + 1; nx++) {
+            for (ny = currenty - 1; ny <= currenty + 1; ny++) {
+              index = getIndex (nx,ny);
+              if (emap[index] >= high) {
+                high = emap[index];
+                high_indexx = nx;
+                high_indexy = ny;
+              }
+              if (emap[index] <= low) {
+                low = emap[index];
+                low_indexx = nx;
+                low_indexy = ny;
+              }
+            }
+          }
+          //Search done.  
+          //Sanity checks
+          if (low_indexx < 0)
+            low_indexx += EROSION_SIZE;
+          if (low_indexy < 0)
+            low_indexy += EROSION_SIZE;
+          low_indexx %= EROSION_SIZE;
+          low_indexy %= EROSION_SIZE;
+          //If we didn't move, then we're at the lowest point
+          if (low_indexx == currentx && low_indexy==currenty)
+            break;
+          index = getIndex (currentx,currenty);
+          //If we're at the highest point around, we're on a spike.
+          //File that sucker down.
+          if (high_indexx == currentx && high_indexy==currenty)
+            buffer[index] *= 0.95f;
+          //Erode this point a tiny bit, and move down.
+          buffer[index] *= 0.97f;
+          currentx = low_indexx;
+          currenty = low_indexy;
+        }
+      }
+    }
+    memcpy (emap, buffer, sizeof (float) * EROSION_SIZE * EROSION_SIZE);
+  }
 
-	float* buffer = new float[size * size];
-  memcpy (buffer, data, sizeof (float) * size * size);
-	
-	for (int pass = 0;pass<0;pass++)
-	{
-		for (int y = 0;y<size;y++)
-			for (int x = 0;x<size;x++)
-			{
-				float low;
-				float high;
-				int lowindexx = x;
-				int lowindexy = y;
-				low = high = data[getIndex(y,x)];
-				int cx = x;
-				int cy = y;
-				while (1)
-				{
-					for (int nx = cx-1;nx<cx+2;nx++)
-						for (int ny = cy-1;ny<cy+2;ny++)
-						{
-							if (data[getIndex(ny,nx)] < low)
-							{
-								low = data[getIndex(ny,nx)];
-								lowindexx = nx;lowindexy=ny;
-							}
-						}
-					if (lowindexx==cx && lowindexy==cy)
-						break;
-					buffer[getIndex(cy,cx)]*=0.98f;
-					cx = lowindexx;cy=lowindexy;
-				}
-			}
-	  memcpy (data, buffer, sizeof (float) * size * size);
-	}		
-	int k = 2;
-	while (k--)
-	{
-		for (int y = 0; y < size; y++) 
-	  {
-	    for (int x = 0; x < size; x++)
-	    {
-	      float val = 0.0f;
-	      int count = 0;
-	      for (int nx = x-1; nx <= x+1; nx++)
-	        for (int ny = y-1; ny <= y+1; ny++) 
-	        {
-	          val += data[getIndex(ny,nx)];
-	          count++;
-		      }
-	      val /= (float)count;
-	      data[getIndex(y,x)] = val;
-	    }
-	  }
-	}
-  min = data[0];
-  max = data[0];
-  for (int y = 0; y < size; y++) 
-    for (int x = 0; x < size; x++)
-    {
-      if (data[getIndex(y,x)]>min) 
-        min = data[getIndex(y,x)];
-	  if (data[getIndex(y,x)]<max)
-		max = data[getIndex(y,x)];
-	}
-  for (int y = 0; y < size; y++) 
-    for (int x = 0; x < size; x++)
-      data[getIndex(y,x)] = (data[getIndex(y,x)]-min)/(max-min);
+#define BLUR_RADIUS 2
+  //Blur the elevations a bit to round off little spikes and divots.
+  for (y = 0; y < EROSION_SIZE; y++) {
+    for (x = 0; x < EROSION_SIZE; x++) {
+      val = 0.0f;
+      count = 0;
+      for (nx = -BLUR_RADIUS; nx <= BLUR_RADIUS; nx++) {
+        for (ny = -BLUR_RADIUS; ny <= BLUR_RADIUS; ny++) {
+          currentx = ((x + nx) + EROSION_SIZE) % EROSION_SIZE;
+          currenty = ((y + ny) + EROSION_SIZE) % EROSION_SIZE;
+          index = getIndex (currentx,currenty);
+          val += buffer[index];
+          count++;
+        }
+      }
+      val /= (float)count;
+      emap[index] = (emap[index] + val) / 2.0f;
+      emap[index] = val;
+    }
+  }
+  
+  
+  delete[] buffer;
+  //re-normalize the map
 
+  high = 0;
+  low = 999999;
+  for (y = 0; y < EROSION_SIZE; y++) {
+    for (x = 0; x < EROSION_SIZE; x++) {
+      index = getIndex (x, y);
+      high = max (emap[index], high);
+      low = min (emap[index], low);
+    }
+  }
+  high = high - low;
+  for (y = 0; y < EROSION_SIZE; y++) {
+    for (x = 0; x < EROSION_SIZE; x++) {
+      index = getIndex (x, y);
+      emap[index] -= low;
+      emap[index] /= high;
+    }
+  }
 
-	delete[] buffer;
 }
+
