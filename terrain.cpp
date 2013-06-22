@@ -43,6 +43,12 @@ GLuint MakeCompositeTerrain(int size,World* parent,int detail,int X,int Y)
 	for (int i = 0;i<TERRAIN_COUNT+1+3;i++)
 		vectorSpace[i] = new float[size*size];
 	//Tests confirm that this is the slow function
+	sbit* s1 = NULL;
+	sbit* s2;
+	sbit* s3;
+	sbit* s4;
+	int lastY = -1;
+	int lastX = -1;
 	for (int i = 0;i<TERRAIN_OUTPUT_TEXTURE_SIZE;i++)
 	{
 		float shadowHeight = -10000.0;
@@ -53,24 +59,32 @@ GLuint MakeCompositeTerrain(int size,World* parent,int detail,int X,int Y)
 			float fx = X+(float(j)*size/TERRAIN_OUTPUT_TEXTURE_SIZE) - x;
 			float fy = Y+(float(i)*size/TERRAIN_OUTPUT_TEXTURE_SIZE) - y;
 			
-			int terrainNumber = parent->getSAt(y,x)->surfaceType;
-			int terrainNumber1 = parent->getSAt(y,x+1)->surfaceType;
-			int terrainNumber2 = parent->getSAt(y+1,x)->surfaceType;
-			int terrainNumber3 = parent->getSAt(y+1,x+1)->surfaceType;
-			float lighting = Vector3(1.0/1.414213,1.0/1.414213,0).dot(*(parent->getSAt(y,x)->normal));
+			if (lastX!=x || lastY!=y)
+			{
+				s1 = parent->getSAt(y,x);
+				s2 = parent->getSAt(y,x+1);
+				s3 = parent->getSAt(y+1,x);
+				s4 = parent->getSAt(y+1,x+1);
+			}
+
+			int terrainNumber = s1->surfaceType;
+			int terrainNumber1 = s2->surfaceType;
+			int terrainNumber2 = s3->surfaceType;
+			int terrainNumber3 = s4->surfaceType;
+			float lighting = Vector3(1.0/1.414213,1.0/1.414213,0).dot(*(s1->normal));
 			
-			int r1 = getPixelAt(0,terrainNumber,i,j,parent->getSAt(y,x)->colour,terrainNumber==SURFACE_GRASS);
-			int g1 = getPixelAt(1,terrainNumber,i,j,parent->getSAt(y,x)->colour,terrainNumber==SURFACE_GRASS);
-			int b1 = getPixelAt(2,terrainNumber,i,j,parent->getSAt(y,x)->colour,terrainNumber==SURFACE_GRASS);
-			int r2 = getPixelAt(0,terrainNumber1,i,j,parent->getSAt(y,x+1)->colour,terrainNumber1==SURFACE_GRASS);
-			int g2 = getPixelAt(1,terrainNumber1,i,j,parent->getSAt(y,x+1)->colour,terrainNumber1==SURFACE_GRASS);
-			int b2 = getPixelAt(2,terrainNumber1,i,j,parent->getSAt(y,x+1)->colour,terrainNumber1==SURFACE_GRASS);
-			int r3 = getPixelAt(0,terrainNumber2,i,j,parent->getSAt(y+1,x)->colour,terrainNumber2==SURFACE_GRASS);
-			int g3 = getPixelAt(1,terrainNumber2,i,j,parent->getSAt(y+1,x)->colour,terrainNumber2==SURFACE_GRASS);
-			int b3 = getPixelAt(2,terrainNumber2,i,j,parent->getSAt(y+1,x)->colour,terrainNumber2==SURFACE_GRASS);
-			int r4 = getPixelAt(0,terrainNumber3,i,j,parent->getSAt(y+1,x+1)->colour,terrainNumber3==SURFACE_GRASS);
-			int g4 = getPixelAt(1,terrainNumber3,i,j,parent->getSAt(y+1,x+1)->colour,terrainNumber3==SURFACE_GRASS);
-			int b4 = getPixelAt(2,terrainNumber3,i,j,parent->getSAt(y+1,x+1)->colour,terrainNumber3==SURFACE_GRASS);
+			int r1 = getPixelAt(0,terrainNumber,i,j,s1->colour,terrainNumber==SURFACE_GRASS);
+			int g1 = getPixelAt(1,terrainNumber,i,j,s1->colour,terrainNumber==SURFACE_GRASS);
+			int b1 = getPixelAt(2,terrainNumber,i,j,s1->colour,terrainNumber==SURFACE_GRASS);
+			int r2 = getPixelAt(0,terrainNumber1,i,j,s2->colour,terrainNumber1==SURFACE_GRASS);
+			int g2 = getPixelAt(1,terrainNumber1,i,j,s2->colour,terrainNumber1==SURFACE_GRASS);
+			int b2 = getPixelAt(2,terrainNumber1,i,j,s2->colour,terrainNumber1==SURFACE_GRASS);
+			int r3 = getPixelAt(0,terrainNumber2,i,j,s3->colour,terrainNumber2==SURFACE_GRASS);
+			int g3 = getPixelAt(1,terrainNumber2,i,j,s3->colour,terrainNumber2==SURFACE_GRASS);
+			int b3 = getPixelAt(2,terrainNumber2,i,j,s3->colour,terrainNumber2==SURFACE_GRASS);
+			int r4 = getPixelAt(0,terrainNumber3,i,j,s4->colour,terrainNumber3==SURFACE_GRASS);
+			int g4 = getPixelAt(1,terrainNumber3,i,j,s4->colour,terrainNumber3==SURFACE_GRASS);
+			int b4 = getPixelAt(2,terrainNumber3,i,j,s4->colour,terrainNumber3==SURFACE_GRASS);
 
 
 			int r = linearInterpolate(linearInterpolate(r1,r2,fx),linearInterpolate(r3,r4,fx),fy);
