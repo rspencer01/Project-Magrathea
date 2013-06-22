@@ -114,7 +114,8 @@ void page::DoSurface()
 					data[y][x].surfaceType = SURFACE_SNOW;
 			}
 			else
-				data[y][x].surfaceType = SURFACE_SAND;	
+				if (data[y][x].elevation < 10)
+					data[y][x].surfaceType = SURFACE_SAND;	
 			float rockCutoff = 0.92;
 			float dirtCutoff = 0.95;
 			if (parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->climate == CL_TUNDRA)
