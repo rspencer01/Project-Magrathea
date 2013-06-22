@@ -118,7 +118,8 @@ void World::Render(float x, float y)
 	writeString(800,40,"Moisture: %.3f",getBiomeAt(y,x)->moisture);
 	writeString(800,60,"Grassiness: %.3f",getBiomeAt(y,x)->grassiness);
 	writeString(800,80,"Climate number: %d",getBiomeAt(y,x)->climate);
-	writeString(1200,20,"Detail Contrast Level: %f",getBiomeAt(y,x)->detail);
+	writeString(1200,20,"Topography Contrast Level: %f",getBiomeAt(y,x)->topography);
+	writeString(1200,40,"Detail Contrast Level: %f",getBiomeAt(y,x)->detail);
 }
 
 float World::cellHeight(int world_y,int world_x)

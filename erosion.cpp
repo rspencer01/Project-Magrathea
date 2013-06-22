@@ -12,10 +12,6 @@ using namespace std;
 
 #define EROSION_SIZE 256
 
-inline float abs(float a)
-{
-	return a>0?a:-a;
-}
 float* erosionData;
 
 void entropy_erode(float*);
