@@ -97,7 +97,8 @@ biomeSystem::biomeSystem()
 			biomes[i][j].grassHeight = hump(biomes[i][j].temperature)*biomes[i][j].moisture*biomes[i][j].moisture*hump(biomes[i][j].temperature)*biomes[i][j].moisture*biomes[i][j].moisture;
 			
 			biomes[i][j].flags = 0;
-		}		
+		}	
+	for (int k = 0;k<3;k++)
 	for(int i = 1;i<sizeInBiomes-1;i++)
 		for(int j = 1;j<sizeInBiomes-1;j++)			
 		{
@@ -119,7 +120,7 @@ biomeSystem::biomeSystem()
 	mx *= 0.99f;
 	for(int i = 1;i<sizeInBiomes-1;i++)
 		for(int j = 1;j<sizeInBiomes-1;j++)	
-			biomes[i][j].topography = 1.f;//(biomes[i][j].topography-mn)/(mx-mn);
+			biomes[i][j].topography = (biomes[i][j].topography-mn)/(mx-mn);
 
 	FILE* biomeImage = fopen("biomes.raw","wb");
 	unsigned char* data = new unsigned char[sizeInBiomes*sizeInBiomes*3];
