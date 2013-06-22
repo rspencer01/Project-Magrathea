@@ -71,7 +71,7 @@ biomeSystem::biomeSystem()
 			if (biomes[i][j].climate==CL_JUNGLE)
 			{
 				biomes[i][j].grassColor[0] = linearInterpolate(5,182,1-biomes[i][j].moisture );
-				biomes[i][j].grassColor[1] = linearInterpolate(81,142,1-biomes[i][j].moisture );
+				biomes[i][j].grassColor[1] = linearInterpolate(250,142,1-biomes[i][j].moisture );
 				biomes[i][j].grassColor[2] = linearInterpolate(5,48,1-biomes[i][j].moisture );
 			}
 			if (biomes[i][j].climate==CL_TUNDRA)

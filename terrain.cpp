@@ -42,13 +42,14 @@ GLuint MakeCompositeTerrain(int size,World* parent,int detail,int X,int Y)
 	float** vectorSpace = new float*[TERRAIN_COUNT+1+3];
 	for (int i = 0;i<TERRAIN_COUNT+1+3;i++)
 		vectorSpace[i] = new float[size*size];
+	//Tests confirm that this is the slow function
 	for (int i = 0;i<TERRAIN_OUTPUT_TEXTURE_SIZE;i++)
 	{
 		float shadowHeight = -10000.0;
-		for (int j = TERRAIN_OUTPUT_TEXTURE_SIZE-1;j>=0;j--)
+		for (int j = 0;j<TERRAIN_OUTPUT_TEXTURE_SIZE;j++)
 		{
-			int y = Y+(i*size/TERRAIN_OUTPUT_TEXTURE_SIZE);
-			int x = X+(j*size/TERRAIN_OUTPUT_TEXTURE_SIZE);
+			int y = max(0,Y+(i*size/TERRAIN_OUTPUT_TEXTURE_SIZE));
+			int x = max(0,X+(j*size/TERRAIN_OUTPUT_TEXTURE_SIZE));
 			float fx = X+(float(j)*size/TERRAIN_OUTPUT_TEXTURE_SIZE) - x;
 			float fy = Y+(float(i)*size/TERRAIN_OUTPUT_TEXTURE_SIZE) - y;
 			

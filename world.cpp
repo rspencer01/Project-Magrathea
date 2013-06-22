@@ -112,6 +112,7 @@ void World::Render(float x, float y)
 																								 ,nr);
 	writeString(400,20,"Total world size: %dx%dm",worldSize,worldSize);
 	writeString(400,40,"%d pages of size %d",dataBook->getNumPages(),PAGE_SIZE);
+	writeString(400,60,"TerrainDetail Level: %d",renderDetail);
 
 	writeString(800,20,"Temperature: %.3f",getBiomeAt(y,x)->temperature);
 	writeString(800,40,"Moisture: %.3f",getBiomeAt(y,x)->moisture);
