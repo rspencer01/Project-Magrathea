@@ -54,7 +54,7 @@ float heightMap::getAt(int y,int x)
 	detail = 5*detail*changeContrast(getErosionData(float(x),float(y)),detail*detail);
 	*/
 	float detail = 2*getErosionData(float(x*2.f),float(y*2.f));
-	float terrain = 30*getErosionData(float(x/5.f),float(y/5.f));
+	float terrain = 45*getErosionData(float(x/5.f),float(y/5.f));
 		/*(linearInterpolate(linearInterpolate(bd->topography,bd2->topography,fy),linearInterpolate(bd3->topography,bd4->topography,fy),fx));
 	terrain = 140*terrain*getErosionData(float(x/10.f),float(y/10.f));
 	*/
@@ -64,5 +64,5 @@ float heightMap::getAt(int y,int x)
 	*/
 	//float terrain = 50*getErosionData(float(x)/8,float(y)/8)*(linearInterpolate(linearInterpolate(bd->topography,bd2->topography,fy),linearInterpolate(bd3->topography,bd4->topography,fy),fx));
 	float bias = 70*(cosineInterpolate(cosineInterpolate(bd->baseLevel,bd2->baseLevel,fy),cosineInterpolate(bd3->baseLevel,bd4->baseLevel,fy),fx));
-	return  terrain + detail;
+	return  terrain + detail + bias;
 }
