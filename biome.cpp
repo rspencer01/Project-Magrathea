@@ -91,7 +91,7 @@ biomeSystem::biomeSystem()
 			biomes[i][j].grassColor[1] += rand()%10 - 5 + 255;biomes[i][j].grassColor[1]%=255;
 			biomes[i][j].grassColor[2] += rand()%10 - 5 + 255;biomes[i][j].grassColor[2]%=255;
 			
-			biomes[i][j].topography = (rand()%100)/100.0f;
+			biomes[i][j].topography = (biomes[i][j].climate!=CL_COASTAL)?(rand()%100)/100.0f:0;
 			biomes[i][j].detail     = (rand()%100)/100.0f;
 			biomes[i][j].grassiness = hump(biomes[i][j].temperature)*biomes[i][j].moisture*biomes[i][j].moisture*hump(biomes[i][j].temperature)*biomes[i][j].moisture*biomes[i][j].moisture;
 			biomes[i][j].grassHeight = hump(biomes[i][j].temperature)*biomes[i][j].moisture*biomes[i][j].moisture*hump(biomes[i][j].temperature)*biomes[i][j].moisture*biomes[i][j].moisture;
@@ -115,7 +115,7 @@ biomeSystem::biomeSystem()
 		for(int j = 1;j<sizeInBiomes-1;j++)	
 		{
 			mn = min(mn,biomes[i][j].topography);
-			mx = max(mn,biomes[i][j].topography);
+			mx = max(mx,biomes[i][j].topography);
 		}
 	mx *= 0.99f;
 	for(int i = 1;i<sizeInBiomes-1;i++)
