@@ -1,3 +1,4 @@
+#include "misc.h"
 #include "world.h"
 #include "region.h"
 #include "graphics.h"
@@ -8,6 +9,7 @@
 #include <utility>
 #include <assert.h>
 #include <list>
+#include <algorithm>
 using namespace std;
 
 #define ROUND(_a,_b) (int(_b)*(int(_a)/int(_b)))
@@ -99,11 +101,15 @@ void World::Render(float x, float y)
 		for (list<region*>::iterator it2 = (*it).begin(); it2!=(*it).end() ; it2++)
 		{
 			nr++;
-			(*it2)->Render(renderDetail);
+			float thisDetail = renderDetail - dist((*it2)->x,(*it2)->y,x,y) / (2*regionSize);
+			(*it2)->Render(max(3,(int)thisDetail));
 		}
 	for (list<list<region*> >::iterator it = visibleRegions.begin();it!=visibleRegions.end();it++)
 		for (list<region*>::iterator it2 = (*it).begin(); it2!=(*it).end() ; it2++)
-			(*it2)->RenderGrass(renderDetail);
+		{
+			float thisDetail = renderDetail - dist((*it2)->x,(*it2)->y,x,y) / (2*regionSize);
+			(*it2)->RenderGrass(max(3,(int)thisDetail));
+		}
 	dataBook->deleteUnused();
 		
 	// GUI INTERESTING INFO

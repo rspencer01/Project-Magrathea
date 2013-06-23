@@ -7,5 +7,6 @@ float linearInterpolate(float,float,float);
 float cosineInterpolate(float,float,float);
 float cubicInterpolate(float,float,float,float,float);
 float changeContrast(float value,float contrast);
-
+void normalise(float*,int);
+float dist(float,float,float,float);
 #endif
