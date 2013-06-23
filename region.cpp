@@ -22,6 +22,7 @@ region::region(int _size,int _x,int _y,World* _parent)
 	VertexData = NULL;
 	TextureData = NULL;
 	surface =NULL;
+	numTri = NULL;
 	bestDetail = -1;
 }
 
@@ -34,7 +35,13 @@ region::~region()
 	if (TextureData!=NULL)
 		delete[] TextureData;
 	if (TriangleData!=NULL)
+	{
+		for (int i = 0;i<20;i++)
+			delete[] TriangleData[i];
 		delete[] TriangleData;
+	}
+	if (numTri!=NULL)
+		delete[] numTri;
 	glDeleteTextures( 1, &TextureNumber);
 }
 
@@ -43,7 +50,7 @@ int region::getIndex(int x,int y)
 	return x+y*size;
 }
 
-void region::Triangulate()
+void region::Triangulate(int detail)
 {
 	if (VertexData==NULL)
 	{
@@ -68,19 +75,27 @@ void region::Triangulate()
 	/*This is the meat of this function*/
 	if (TriangleData==NULL)
 	{
-		TriangleData= new int[size*size*6];
+		TriangleData = new int*[20];
+		numTri = new int [20];
+		for (int i = 0;i<20;i++)
+			TriangleData[i] = NULL;
+	}
+	int adetail = 1<<( 8-max(0,min(8,detail)));
+	if (TriangleData[detail]==NULL)
+	{
+		TriangleData[detail]= new int[size*size*6];
 		int count = 0;
-		for (int i = 1;i<size;i++)
-			for (int j = 1;j<size;j++)
+		for (int i = adetail;i<size;i+=adetail)
+			for (int j = adetail;j<size;j+=adetail)
 			{
-				TriangleData[count++] = (i*size)+j;
-				TriangleData[count++] = (i*size)+j-1;
-				TriangleData[count++] = ((i-1)*size)+j-1;
-				TriangleData[count++] = (i*size)+j;
-				TriangleData[count++] = ((i-1)*size)+j;
-				TriangleData[count++] = ((i-1)*size)+j-1;
+				TriangleData[detail][count++] = (i*size)+j;
+				TriangleData[detail][count++] = (i*size)+j-adetail;
+				TriangleData[detail][count++] = ((i-adetail)*size)+j-adetail;
+				TriangleData[detail][count++] = (i*size)+j;
+				TriangleData[detail][count++] = ((i-adetail)*size)+j;
+				TriangleData[detail][count++] = ((i-adetail)*size)+j-adetail;
 			}		
-		numTri = count;
+		numTri[detail] = count;
 	}	
 }
 
@@ -96,8 +111,7 @@ void region::Render(int detail)
 		TextureNumber = MakeCompositeTerrain(size,parent,detail,x,y);		
 		bestDetail = detail;
 	}
-	
-	Triangulate();
+	Triangulate(detail);
 	
 
 
@@ -115,14 +129,14 @@ void region::Render(int detail)
 				 
 	glBindTexture(GL_TEXTURE_2D, TextureNumber);
 	glDrawElements( GL_TRIANGLES, //mode
-                  numTri,  //count, ie. how many indices
+                  numTri[detail],  //count, ie. how many indices
                   GL_UNSIGNED_INT, //type of the index array
-                  TriangleData);
+                  TriangleData[detail]);
   
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	
-	addTriangles(numTri/3);
+	addTriangles(numTri[detail]/3);
 	
 
 	

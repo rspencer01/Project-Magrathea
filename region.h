@@ -21,14 +21,14 @@ class region
 		//void smooth();
 		Vector3 calcNorm(int,int);
 		void CalculateNormals();
-		void Triangulate();
+		void Triangulate(int);
 		Vector3* normals;
 		GLfloat* VertexData;
 		GLfloat* NormalData;
 		GLfloat* TextureData;
 		GLfloat* ColourData;
-		int* TriangleData;
-		int numTri;
+		int** TriangleData;
+		int* numTri;
 		GLuint TextureNumber;
 		World* parent;
 		int bestDetail;
