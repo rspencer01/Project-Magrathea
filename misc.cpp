@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include <algorithm>
 #include "misc.h"
 
 void smooth(float* array,int w, int h, int r)
@@ -59,4 +60,22 @@ float changeContrast(float value,float contrast)
 		float x = pow((0.5f-value)*2,1.f-contrast);
 		return 0.5f - x/2.f;
 	}
+}
+
+void normalise(float* values, int size)
+{
+	float mn = values[0];
+	float mx = values[0];
+	for (int i = 0;i<size;i++)
+	{
+		mn = std::min(mn,values[i]);
+		mx = std::max(mx,values[i]);
+	}
+	for (int i = 0;i<size;i++)
+		values[i] = (values[i] - mn)/(mx-mn);
+}
+
+float dist(float a, float b,float c,float d)
+{
+	return sqrt((a-c)*(a-c) + (b-d)*(b-d));
 }

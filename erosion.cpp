@@ -62,7 +62,7 @@ float getErosionData(float x,float y)
 
 void entropy_erode (float* emap)
 {
-
+  normalise(emap,EROSION_SIZE*EROSION_SIZE);
   float*  buffer;
   int     x, y;
   float   low, high, val;
@@ -152,24 +152,6 @@ void entropy_erode (float* emap)
   
   delete[] buffer;
   //re-normalize the map
-
-  high = 0;
-  low = 999999;
-  for (y = 0; y < EROSION_SIZE; y++) {
-    for (x = 0; x < EROSION_SIZE; x++) {
-      index = getIndex (x, y);
-      high = max (emap[index], high);
-      low = min (emap[index], low);
-    }
-  }
-  high = high - low;
-  for (y = 0; y < EROSION_SIZE; y++) {
-    for (x = 0; x < EROSION_SIZE; x++) {
-      index = getIndex (x, y);
-      emap[index] -= low;
-      emap[index] /= high;
-    }
-  }
-
+  normalise(emap,EROSION_SIZE*EROSION_SIZE);
 }
 
