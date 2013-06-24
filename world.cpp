@@ -120,7 +120,7 @@ void World::Render(float x, float y)
 	writeString(400,40,"%d pages of size %d",dataBook->getNumPages(),PAGE_SIZE);
 	writeString(400,60,"TerrainDetail Level: %d",renderDetail);
 
-	writeString(800,20,"Temperature: %.3f",getBiomeAt(y,x)->temperature);
+	writeString(800,20,"Temperature: %.3f (%dC)",getBiomeAt(y,x)->temperature,(int)(getBiomeAt(y,x)->temperature*80)-20);
 	writeString(800,40,"Moisture: %.3f",getBiomeAt(y,x)->moisture);
 	writeString(800,60,"Grassiness: %.3f",getBiomeAt(y,x)->grassiness);
 	writeString(800,80,"Climate number: %d",getBiomeAt(y,x)->climate);
