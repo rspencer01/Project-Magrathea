@@ -25,13 +25,14 @@ struct sbit
 };
 
 
-#define SURFACE_GRASS 0
-#define SURFACE_DIRT  1
-#define SURFACE_WATER 2
-#define SURFACE_ROCK  3
-#define SURFACE_BUSH  4
-#define SURFACE_SAND  5
-#define SURFACE_SNOW  6
+#define SURFACE_WATER 0
+#define SURFACE_ROCK  1
+#define SURFACE_SAND  2
+#define SURFACE_DIRT  3
+#define SURFACE_SNOW  4
+#define SURFACE_GRASS 5
+#define SURFACE_BUSH  6
+
 
 
 #endif

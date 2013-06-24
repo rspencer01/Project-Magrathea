@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <GL/glut.h>
 using namespace std;
-const char*    textureNames[TERRAIN_COUNT] = {"solidGrass512.raw","sdirt512.raw","swater512.raw","srock512.raw","sgrassb512.raw","ssand512.raw","ssnow512.raw"};
+const char*    textureNames[TERRAIN_COUNT] = {"swater512.raw","srock512.raw","ssand512.raw","sdirt512.raw","ssnow512.raw","solidGrass512.raw","sgrassb512.raw"};
 unsigned char* textureData[TERRAIN_COUNT];
 
 void initTerrain()
