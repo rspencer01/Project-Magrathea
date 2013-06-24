@@ -26,11 +26,11 @@ inline int repIndex(int a,int b)
 }
 
 
-int getPixelAt(int rgb,int terrainNumber,int i,int j,Vector3* colour, bool doCol)
+int getPixelAt(int rgb,int terrainNumber,int i,int j,float* colour, bool doCol)
 {
 	if (! doCol)
 		return textureData[terrainNumber][repIndex(i,j+1)*3 + rgb];
-	return textureData[terrainNumber][repIndex(i,j+1)*3 + rgb] * colour->getDimension(rgb) / 256;
+	return textureData[terrainNumber][repIndex(i,j+1)*3 + rgb] * colour[rgb]/255;
 }
 
 GLuint MakeCompositeTerrain(int size,World* parent,int detail,int X,int Y)
@@ -71,7 +71,7 @@ GLuint MakeCompositeTerrain(int size,World* parent,int detail,int X,int Y)
 			int terrainNumber1 = s2->surfaceType;
 			int terrainNumber2 = s3->surfaceType;
 			int terrainNumber3 = s4->surfaceType;
-			float lighting = Vector3(1.0/1.414213,1.0/1.414213,0).dot(*(s1->normal));
+			float lighting = Vector3(1.0/1.414213,1.0/1.414213,0).dot(Vector3(s1->normal));
 			
 			int r1 = getPixelAt(0,terrainNumber,i,j,s1->colour,terrainNumber==SURFACE_GRASS);
 			int g1 = getPixelAt(1,terrainNumber,i,j,s1->colour,terrainNumber==SURFACE_GRASS);

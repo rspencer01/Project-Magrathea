@@ -26,7 +26,7 @@ grass::grass(Vector3 _position,World* _parent,float _height)
 
 void grass::Render()
 {
-	Vector3* col = parent->getSAt((int)position.z,(int)position.x)->colour;
+	Vector3* col = new Vector3(parent->getSAt((int)position.z,(int)position.x)->colour);
 	glColor3f((GLfloat)(col->x/256.0),(GLfloat)(col->y/256.0),(GLfloat)(col->z/256.0));
 	glBindTexture( GL_TEXTURE_2D, texture );
 	glBegin(GL_TRIANGLES);
@@ -62,4 +62,5 @@ void grass::Render()
 	glVertex3f(position.x+0,position.y+height,position.z+1);
 	glEnd();
 	addTriangles(4);
+	delete col;
 }
