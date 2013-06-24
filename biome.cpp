@@ -72,7 +72,7 @@ biomeSystem::biomeSystem()
 			biomes[i][j].grassiness = hump(biomes[i][j].temperature)*biomes[i][j].moisture*biomes[i][j].moisture*hump(biomes[i][j].temperature)*biomes[i][j].moisture*biomes[i][j].moisture;
 			biomes[i][j].grassHeight = hump(biomes[i][j].temperature)*biomes[i][j].moisture*biomes[i][j].moisture*hump(biomes[i][j].temperature)*biomes[i][j].moisture*biomes[i][j].moisture;
 			
-			biomes[i][j].flags = 0;
+			biomes[i][j].flags = rand()%5;
 		}	
 	for (int k = 0;k<3;k++)
 	for(int i = 1;i<sizeInBiomes-1;i++)

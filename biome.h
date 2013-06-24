@@ -4,6 +4,7 @@
 #include "magrathea.h"
 
 #define FORM_BUTTE 2
+#define FORM_CRATER 1
 
 #define CL_DESERT 1
 #define CL_TUNDRA  2

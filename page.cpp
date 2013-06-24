@@ -117,11 +117,14 @@ void page::DoSurface()
 				rockCutoff = 0.95;
 			//if (data[y][x].normal->y < dirtCutoff)
 			//	data[y][x].surfaceType = SURFACE_DIRT;
-			if (data[y][x].normal[1] < rockCutoff)
-				data[y][x].surfaceType = SURFACE_ROCK;
+			for (int dy = max(y-1,0);dy<min(y+2,PAGE_SIZE);dy++)
+				for (int dx = max(x-1,0);dx<min(x+2,PAGE_SIZE);dx++)
+					if (data[dy][dx].normal[1] < rockCutoff)
+						data[y][x].surfaceType = SURFACE_ROCK;
 			if (data[y][x].elevation <data[y][x].waterLevel)
 				data[y][x].surfaceType = SURFACE_WATER; 
 		}
+
 	state = state | PS_SURFACE;
 }
 

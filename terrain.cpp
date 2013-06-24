@@ -72,6 +72,7 @@ GLuint MakeCompositeTerrain(int size,World* parent,int detail,int X,int Y)
 			int terrainNumber2 = s3->surfaceType;
 			int terrainNumber3 = s4->surfaceType;
 			float lighting = Vector3(1.0/1.414213,1.0/1.414213,0).dot(Vector3(s1->normal));
+			lighting = max(lighting,0.2f);
 			
 			int r1 = getPixelAt(0,terrainNumber,i,j,s1->colour,terrainNumber==SURFACE_GRASS);
 			int g1 = getPixelAt(1,terrainNumber,i,j,s1->colour,terrainNumber==SURFACE_GRASS);
