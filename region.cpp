@@ -160,8 +160,8 @@ void region::populate()
 				surface[getIndex(i,j)] = parent->getSAt(y+i,x+j);
 				if (surface[getIndex(i,j)]->isGrass)
 				{
-					grasses.push_back(grass(Vector3(surface[getIndex(i,j)]->x,surface[getIndex(i,j)]->elevation,surface[getIndex(i,j)]->y),
-																	parent,1.5*surface[getIndex(i,j)]->grassHeight));
+					grasses.push_back(grass(Vector3(surface[getIndex(i,j)]->x,surface[getIndex(i,j)]->elevation,surface[getIndex(i,j)]->y),Vector3(surface[getIndex(i,j)]->normal),
+																	parent,1.5f*surface[getIndex(i,j)]->grassHeight));
 					grasses.back().Render();
 				}
 			}
