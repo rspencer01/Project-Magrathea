@@ -133,8 +133,8 @@ void page::DoNormals()
 	for (int dy = max(0,origY-1);dy<=min(PAGE_COUNT-1,origY+1);dy++)
 		for (int dx = max(0,origX-1);dx<=min(PAGE_COUNT-1,origX+1);dx++)
 			parentB->forcePage(dy,dx,PS_ELEVATIONS);
-	for (int y = origY*PAGE_SIZE;y<min(origY*PAGE_SIZE+PAGE_SIZE-1,WORLD_SIZE-2);y++)
-		for (int x = origX*PAGE_SIZE;x<min(origX*PAGE_SIZE+PAGE_SIZE-1,WORLD_SIZE-2);x++)
+	for (int y = origY*PAGE_SIZE;y<min(origY*PAGE_SIZE+PAGE_SIZE,WORLD_SIZE-1);y++)
+		for (int x = origX*PAGE_SIZE;x<min(origX*PAGE_SIZE+PAGE_SIZE,WORLD_SIZE-1);x++)
 		{
 			Vector3 n = getNormal3f(x,parentB->getPartialAt(y+1,x)->elevation,y+1,
 									x,parentB->getPartialAt(y,x)->elevation,y,
