@@ -10,6 +10,12 @@ Vector3::Vector3(float _x,float _y,float _z)
 	y = _y;
 	z = _z;
 }
+Vector3::Vector3(float* _d)
+{
+	x = _d[0];
+	y = _d[1];
+	z = _d[2];
+}
 /*Vector3::Vector3(int _x,int _y,int _z)
 {
 	x = (float)_x;

@@ -8,6 +8,7 @@ class Vector3
 		float y;
 		float z;
 		Vector3(float,float,float);
+		Vector3(float*);
 		//Vector3(int,int,int);
 		Vector3();
 		Vector3 operator=(const Vector3&);
