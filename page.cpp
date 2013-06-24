@@ -17,6 +17,8 @@ page::page(int _origX, int _origY,book* _bparent,World* _parent)
 }
 page::~page()
 {
+	if (! (state&PS_INITIALISED))
+		return;
 	for(int y = 0;y<PAGE_SIZE;y++)
 		for(int x = 0;x<PAGE_SIZE;x++)
 		{
@@ -27,6 +29,7 @@ page::~page()
 
 void page::updateTo(int value)
 {
+	lastTouched = (int)time(NULL);
 	if ((state&value)==value)
 		return;
 	if (value&PS_INITIALISED&(~state))
@@ -41,7 +44,6 @@ void page::updateTo(int value)
 		DoSurface();
 	if (value&PS_GRASS&(~state))
 		DoGrass();
-	lastTouched = (int)time(NULL);	
 }
 
 void page::DoInitialisation()
