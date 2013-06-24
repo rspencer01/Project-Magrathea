@@ -8,6 +8,7 @@ using namespace std;
 #include <math.h>
 #include "noise.h"
 #include "misc.h"
+#include "erosion.h"
 
 #define BIGSCALENUMBER 10
 
@@ -35,18 +36,14 @@ biomeSystem::biomeSystem()
 		for(int j = 0;j<sizeInBiomes;j++)
 		{
 			float d = pow((float(i-sizeInBiomes/2)/(sizeInBiomes/2))*(float(i-sizeInBiomes/2)/(sizeInBiomes/2)) + (float(j-sizeInBiomes/2)/(sizeInBiomes/2))*(float(j-sizeInBiomes/2)/(sizeInBiomes/2)),0.5f);
-			biomes[i][j].baseLevel = 0.7f-d;
+			biomes[i][j].baseLevel = 0.7f-d+getErosionData(i*2.0,j*2.0)*0.3;
 		}	
 	for(int i = 0;i<sizeInBiomes;i++)
 		for(int j = 0;j<sizeInBiomes;j++)
 		{
-			biomes[i][j].moisture = (1.0f-float(j)/(sizeInBiomes))*(1-float(abs(i-sizeInBiomes/2))/(sizeInBiomes));
+			biomes[i][j].moisture = (min(1.0,1.0f-float(j)/(sizeInBiomes)+0.2))*(0.75+float(abs(i-sizeInBiomes/2))/(sizeInBiomes)/2.0);
 			biomes[i][j].temperature = (1.0f-float(i)/(sizeInBiomes));
 			biomes[i][j].climate = CL_JUNGLE;
-			if (biomes[i][j].temperature < T_FREEZING)
-			{
-				biomes[i][j].climate = CL_TUNDRA;
-			}
 		}		
 	for(int i = 0;i<sizeInBiomes;i++)
 		for(int j = 0;j<sizeInBiomes;j++)
@@ -62,33 +59,12 @@ biomeSystem::biomeSystem()
 	for(int i = 0;i<sizeInBiomes;i++)
 		for(int j = 0;j<sizeInBiomes;j++)
 		{
-			if (biomes[i][j].climate==CL_DESERT)
-			{
-				biomes[i][j].grassColor[0] = 182;
-				biomes[i][j].grassColor[1] = 142;
-				biomes[i][j].grassColor[2] = 48;
-			}
-			if (biomes[i][j].climate==CL_JUNGLE)
-			{
-				biomes[i][j].grassColor[0] = linearInterpolate(5,182,1-biomes[i][j].moisture );
-				biomes[i][j].grassColor[1] = linearInterpolate(250,142,1-biomes[i][j].moisture );
-				biomes[i][j].grassColor[2] = linearInterpolate(5,48,1-biomes[i][j].moisture );
-			}
-			if (biomes[i][j].climate==CL_TUNDRA)
-			{
-				biomes[i][j].grassColor[0] = 177;
-				biomes[i][j].grassColor[1] = 227;
-				biomes[i][j].grassColor[2] = 226;
-			}
-			if (biomes[i][j].climate==CL_COASTAL)
-			{
-				biomes[i][j].grassColor[0] = 220;
-				biomes[i][j].grassColor[1] = 197;
-				biomes[i][j].grassColor[2] = 206;
-			}
+			biomes[i][j].grassColor[0] = linearInterpolate(142,linearInterpolate(13,202,1-biomes[i][j].moisture),min(1.f,biomes[i][j].temperature*3));
+			biomes[i][j].grassColor[1] = linearInterpolate(207,linearInterpolate(157,80,1-biomes[i][j].moisture),min(1.f,biomes[i][j].temperature*3));
+			biomes[i][j].grassColor[2] = linearInterpolate(213,linearInterpolate(26,48,1-biomes[i][j].moisture),min(1.f,biomes[i][j].temperature*3));
 			
-			biomes[i][j].grassColor[0] += rand()%10 - 5 + 255;biomes[i][j].grassColor[0]%=255;
-			biomes[i][j].grassColor[1] += rand()%10 - 5 + 255;biomes[i][j].grassColor[1]%=255;
+			biomes[i][j].grassColor[0] += rand()%30 - 15 + 255;biomes[i][j].grassColor[0]%=255;
+			biomes[i][j].grassColor[1] += rand()%30 - 15 + 255;biomes[i][j].grassColor[1]%=255;
 			biomes[i][j].grassColor[2] += rand()%10 - 5 + 255;biomes[i][j].grassColor[2]%=255;
 			
 			biomes[i][j].topography = (biomes[i][j].climate!=CL_COASTAL)?(rand()%100)/100.0f:0;

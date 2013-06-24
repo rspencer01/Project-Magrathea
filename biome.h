@@ -3,7 +3,7 @@
 
 #include "magrathea.h"
 
-#define BIOME_FLAG_CRACKS 1
+#define FORM_BUTTE 2
 
 #define CL_DESERT 1
 #define CL_TUNDRA  2
@@ -12,6 +12,8 @@
 
 #define T_FREEZING 0.4
 #define T_DESERT 0.3
+
+
 
 struct biomeData
 {
