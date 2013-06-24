@@ -11,10 +11,11 @@ class grass
 {
 	private:
 		Vector3 position;
+		Vector3 normal;
 		World* parent;
 		float height;
 	public:
-		grass(Vector3,World*,float);
+		grass(Vector3,Vector3,World*,float);
 		void Render();
 };
 

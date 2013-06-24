@@ -6,11 +6,12 @@
 #include <assert.h>
 GLuint texture = 0;
 
-grass::grass(Vector3 _position,World* _parent,float _height)
+grass::grass(Vector3 _position,Vector3 _normal,World* _parent,float _height)
 {
 	parent = _parent;
 	position = _position;
 	height = _height;
+	normal = _normal;
 	if (texture==0)
 	{
     unsigned char * data = new unsigned char[256 * 256 * 4];
