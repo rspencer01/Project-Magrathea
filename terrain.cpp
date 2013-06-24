@@ -42,7 +42,7 @@ GLuint MakeCompositeTerrain(int size,World* parent,int detail,int X,int Y)
 	//First clear the slate
 	memset(finalRGB,100,TERRAIN_OUTPUT_TEXTURE_SIZE*TERRAIN_OUTPUT_TEXTURE_SIZE*3);
 	//Now, iterate over all the points in this area
-	int splotSize = TERRAIN_OUTPUT_TEXTURE_SIZE/(size*4);
+	int splotSize = TERRAIN_OUTPUT_TEXTURE_SIZE/(size*2);
 
 	for (int y = Y;y<Y+size;y++)
 		for (int x = X;x<X+size;x++)
@@ -52,7 +52,20 @@ GLuint MakeCompositeTerrain(int size,World* parent,int detail,int X,int Y)
 			sbit* here = parent->getSAt(y,x);
 			for (int dy = max(0,terrY-splotSize);dy<min(TERRAIN_OUTPUT_TEXTURE_SIZE,terrY+splotSize);dy++)
 				for (int dx = max(0,terrX-splotSize);dx<min(TERRAIN_OUTPUT_TEXTURE_SIZE,terrX+splotSize);dx++)
-					finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3]= here->surfaceType*80;
+				{
+					int textX = (dx-(terrX-splotSize))*TERRAIN_RAW_SIZE/TERRAIN_OUTPUT_TEXTURE_SIZE;
+					int textY = (dy-(terrY-splotSize))*TERRAIN_RAW_SIZE/TERRAIN_OUTPUT_TEXTURE_SIZE;
+					finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3] = textureData[here->surfaceType][(textY*TERRAIN_RAW_SIZE+textX)*3];
+					finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+1] = textureData[here->surfaceType][(textY*TERRAIN_RAW_SIZE+textX)*3+1];
+					finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+2] = textureData[here->surfaceType][(textY*TERRAIN_RAW_SIZE+textX)*3+2];
+					if (here->surfaceType == SURFACE_GRASS)
+					{
+						finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3] = finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3]*here->colour[0]/255;
+						finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+1] = finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+1]*here->colour[1]/255;
+						finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+2] = finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+2]*here->colour[2]/255;
+					}
+				}
+				
 
 		}
 	GLuint TextureNumber = LoadTextureFromData(finalRGB,TERRAIN_OUTPUT_TEXTURE_SIZE,TERRAIN_OUTPUT_TEXTURE_SIZE);
