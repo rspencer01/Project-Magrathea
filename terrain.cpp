@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <GL/glut.h>
 using namespace std;
-const char*    textureNames[TERRAIN_COUNT] = {"sgrassa512.raw","sdirt512.raw","swater512.raw","srock512.raw","sgrassb512.raw","ssand512.raw","ssnow512.raw"};
+const char*    textureNames[TERRAIN_COUNT] = {"solidGrass512.raw","sdirt512.raw","swater512.raw","srock512.raw","sgrassb512.raw","ssand512.raw","ssnow512.raw"};
 unsigned char* textureData[TERRAIN_COUNT];
 
 void initTerrain()
@@ -42,7 +42,7 @@ GLuint MakeCompositeTerrain(int size,World* parent,int detail,int X,int Y)
 	//First clear the slate
 	memset(finalRGB,100,TERRAIN_OUTPUT_TEXTURE_SIZE*TERRAIN_OUTPUT_TEXTURE_SIZE*3);
 	//Now, iterate over all the points in this area
-	int splotSize = TERRAIN_OUTPUT_TEXTURE_SIZE/(size*2);
+	int splotSize = TERRAIN_OUTPUT_TEXTURE_SIZE/(size*2)+20;
 
 	for (int y = Y;y<Y+size;y++)
 		for (int x = X;x<X+size;x++)
@@ -53,16 +53,22 @@ GLuint MakeCompositeTerrain(int size,World* parent,int detail,int X,int Y)
 			for (int dy = max(0,terrY-splotSize);dy<min(TERRAIN_OUTPUT_TEXTURE_SIZE,terrY+splotSize);dy++)
 				for (int dx = max(0,terrX-splotSize);dx<min(TERRAIN_OUTPUT_TEXTURE_SIZE,terrX+splotSize);dx++)
 				{
-					int textX = (dx-(terrX-splotSize))*TERRAIN_RAW_SIZE/TERRAIN_OUTPUT_TEXTURE_SIZE;
-					int textY = (dy-(terrY-splotSize))*TERRAIN_RAW_SIZE/TERRAIN_OUTPUT_TEXTURE_SIZE;
-					finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3] = textureData[here->surfaceType][(textY*TERRAIN_RAW_SIZE+textX)*3];
-					finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+1] = textureData[here->surfaceType][(textY*TERRAIN_RAW_SIZE+textX)*3+1];
-					finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+2] = textureData[here->surfaceType][(textY*TERRAIN_RAW_SIZE+textX)*3+2];
-					if (here->surfaceType == SURFACE_GRASS)
+					int textX = (dx-(terrX-splotSize))*TERRAIN_RAW_SIZE/(splotSize*2);
+					int textY = (dy-(terrY-splotSize))*TERRAIN_RAW_SIZE/(splotSize*2);
+					//Transparent colour is black
+					if ( textureData[here->surfaceType][(textY*TERRAIN_RAW_SIZE+textX)*3] +
+						 textureData[here->surfaceType][(textY*TERRAIN_RAW_SIZE+textX)*3+1] +
+						 textureData[here->surfaceType][(textY*TERRAIN_RAW_SIZE+textX)*3+2]  != 0)
 					{
-						finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3] = finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3]*here->colour[0]/255;
-						finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+1] = finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+1]*here->colour[1]/255;
-						finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+2] = finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+2]*here->colour[2]/255;
+						finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3] = textureData[here->surfaceType][(textY*TERRAIN_RAW_SIZE+textX)*3];
+						finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+1] = textureData[here->surfaceType][(textY*TERRAIN_RAW_SIZE+textX)*3+1];
+						finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+2] = textureData[here->surfaceType][(textY*TERRAIN_RAW_SIZE+textX)*3+2];
+						if (here->surfaceType == SURFACE_GRASS)
+						{
+							finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3] = finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3]*here->colour[0]/255;
+							finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+1] = finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+1]*here->colour[1]/255;
+							finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+2] = finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+2]*here->colour[2]/255;
+						}
 					}
 				}
 				
