@@ -101,22 +101,12 @@ void page::DoSurface()
 		for (int x = 0;x<PAGE_SIZE;x++)
 		{
 			data[y][x].surfaceType = SURFACE_GRASS;
-			//Todo.  Split into cases
-			if (parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->baseLevel > 0)
-			{
-				if (parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->climate == CL_COASTAL)
-					data[y][x].surfaceType = SURFACE_SAND;
-			}
-			else
-				if (data[y][x].elevation < 10)
-					data[y][x].surfaceType = SURFACE_SAND;	
-			
-			float rockCutoff = 0.92;
-			float dirtCutoff = 0.95;
-			if (parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->climate == CL_TUNDRA)
-				rockCutoff = 0.95;
-			//if (data[y][x].normal->y < dirtCutoff)
-			//	data[y][x].surfaceType = SURFACE_DIRT;
+
+
+			float rockCutoff = 0.90;
+			float dirtCutoff = 0.90 + max((1-(parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->moisture-0.3f)*3),0.f)*0.10;
+			if (data[y][x].normal[1] < dirtCutoff)
+				data[y][x].surfaceType = SURFACE_DIRT;
 			for (int dy = max(y-1,0);dy<min(y+2,PAGE_SIZE);dy++)
 				for (int dx = max(x-1,0);dx<min(x+2,PAGE_SIZE);dx++)
 					if (data[dy][dx].normal[1] < rockCutoff)
