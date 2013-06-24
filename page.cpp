@@ -19,12 +19,6 @@ page::~page()
 {
 	if (! (state&PS_INITIALISED))
 		return;
-	for(int y = 0;y<PAGE_SIZE;y++)
-		for(int x = 0;x<PAGE_SIZE;x++)
-		{
-			delete data[y][x].normal;
-			delete data[y][x].colour;
-		}
 }
 
 void page::updateTo(int value)
@@ -55,8 +49,8 @@ void page::DoInitialisation()
 			data[y][x].y =         origY*PAGE_SIZE + y;
 			data[y][x].elevation = 0;
 			data[y][x].waterLevel = 0;
-			data[y][x].normal = new Vector3(0,1,0);
-			data[y][x].colour = new Vector3(rand()%100,rand()%100,rand()%100);
+			data[y][x].normal[0] = data[y][x].normal[2] = 0; data[y][x].normal[1] = 1;
+			data[y][x].colour[0] = data[y][x].colour[1] = data[y][x].colour[2] = 1;
 			data[y][x].isGrass = false;
 			data[y][x].surfaceType = SURFACE_GRASS;
 		}
@@ -68,9 +62,9 @@ void page::DoColour()
 	for(int y = 0;y<PAGE_SIZE;y++)
 		for(int x = 0;x<PAGE_SIZE;x++)
 		{
-			data[y][x].colour->x = parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->grassColor[0];
-			data[y][x].colour->y = parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->grassColor[1];
-			data[y][x].colour->z = parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->grassColor[2];
+			data[y][x].colour[0] = parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->grassColor[0];
+			data[y][x].colour[1] = parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->grassColor[1];
+			data[y][x].colour[2] = parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->grassColor[2];
 		}
 	state = state | PS_COLOUR;
 }
@@ -112,19 +106,18 @@ void page::DoSurface()
 			{
 				if (parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->climate == CL_COASTAL)
 					data[y][x].surfaceType = SURFACE_SAND;
-				if (parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->climate == CL_TUNDRA)
-					data[y][x].surfaceType = SURFACE_SNOW;
 			}
 			else
 				if (data[y][x].elevation < 10)
 					data[y][x].surfaceType = SURFACE_SAND;	
+			
 			float rockCutoff = 0.92;
 			float dirtCutoff = 0.95;
 			if (parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->climate == CL_TUNDRA)
 				rockCutoff = 0.95;
 			//if (data[y][x].normal->y < dirtCutoff)
 			//	data[y][x].surfaceType = SURFACE_DIRT;
-			if (data[y][x].normal->y < rockCutoff)
+			if (data[y][x].normal[1] < rockCutoff)
 				data[y][x].surfaceType = SURFACE_ROCK;
 			if (data[y][x].elevation <data[y][x].waterLevel)
 				data[y][x].surfaceType = SURFACE_WATER; 
@@ -153,8 +146,10 @@ void page::DoNormals()
 			Vector3 n = getNormal3f(x,parentB->getPartialAt(y+1,x)->elevation,y+1,
 									x,parentB->getPartialAt(y,x)->elevation,y,
 									x+1,parentB->getPartialAt(y+1,x+1)->elevation,y+1);
-			delete data[y - origY*PAGE_SIZE][x - origX*PAGE_SIZE].normal;
-			data[y - origY*PAGE_SIZE][x - origX*PAGE_SIZE].normal = new Vector3(n.x,n.y,n.z);
+			
+			data[y - origY*PAGE_SIZE][x - origX*PAGE_SIZE].normal[0] = n.x;
+			data[y - origY*PAGE_SIZE][x - origX*PAGE_SIZE].normal[1] = n.y;
+			data[y - origY*PAGE_SIZE][x - origX*PAGE_SIZE].normal[2] = n.z;
 		}
 	
 }
