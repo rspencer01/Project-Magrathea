@@ -20,17 +20,15 @@ inline float linearInter(float x1,float x2,float t)
 	return x1*t+x2*(1.0-t);
 }
 
-inline int repIndex(int a,int b)
+int repIndex(int a,int b,int c)
 {
-	return (a%TERRAIN_RAW_SIZE)*TERRAIN_RAW_SIZE + (b%TERRAIN_RAW_SIZE);
-}
-
-
-int getPixelAt(int rgb,int terrainNumber,int i,int j,float* colour, bool doCol)
-{
-	if (! doCol)
-		return textureData[terrainNumber][repIndex(i,j+1)*3 + rgb];
-	return textureData[terrainNumber][repIndex(i,j+1)*3 + rgb] * colour[rgb]/255;
+	if (c%2==0)
+	{
+		int d = a;
+		a = b;
+		b = d;
+	}
+	return ((a+TERRAIN_RAW_SIZE)%TERRAIN_RAW_SIZE)*TERRAIN_RAW_SIZE + ((b+TERRAIN_RAW_SIZE)%TERRAIN_RAW_SIZE);
 }
 
 GLuint MakeCompositeTerrain(int size,World* parent,int detail,int X,int Y)
@@ -60,24 +58,28 @@ GLuint MakeCompositeTerrain(int size,World* parent,int detail,int X,int Y)
 			int terrX = (x-X)*TERRAIN_OUTPUT_TEXTURE_SIZE/size;
 			int terrY = (y-Y)*TERRAIN_OUTPUT_TEXTURE_SIZE/size;
 			sbit* here = parent->getSAt(y,x);
+			int transform = rand();
 			for (int dy = max(0,terrY-splotSize);dy<min(TERRAIN_OUTPUT_TEXTURE_SIZE,terrY+splotSize);dy++)
 				for (int dx = max(0,terrX-splotSize);dx<min(TERRAIN_OUTPUT_TEXTURE_SIZE,terrX+splotSize);dx++)
 				{
 					int textX = (dx-(terrX-splotSize))*TERRAIN_RAW_SIZE/(splotSize*2);
 					int textY = (dy-(terrY-splotSize))*TERRAIN_RAW_SIZE/(splotSize*2);
 					//Transparent colour is black
-					if ( textureData[terrainNumber][(textY*TERRAIN_RAW_SIZE+textX)*3] +
-						 textureData[terrainNumber][(textY*TERRAIN_RAW_SIZE+textX)*3+1] +
-						 textureData[terrainNumber][(textY*TERRAIN_RAW_SIZE+textX)*3+2]  != 0)
+					if ( textureData[terrainNumber][repIndex(textY,textX,transform)*3] +
+						 textureData[terrainNumber][repIndex(textY,textX,transform)*3+1] +
+						 textureData[terrainNumber][repIndex(textY,textX,transform)*3+2]  != 0)
 					{
-						finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3] = textureData[terrainNumber][(textY*TERRAIN_RAW_SIZE+textX)*3];
-						finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+1] = textureData[terrainNumber][(textY*TERRAIN_RAW_SIZE+textX)*3+1];
-						finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+2] = textureData[terrainNumber][(textY*TERRAIN_RAW_SIZE+textX)*3+2];
+						float shader = max(0.1f,Vector3(0.707107,0.707107,0).dot(Vector3(here->normal)));
+
+
+						finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3]   = textureData[terrainNumber][repIndex(textY,textX,transform)*3] * shader;
+						finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+1] = textureData[terrainNumber][repIndex(textY,textX,transform)*3+1] * shader;
+						finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+2] = textureData[terrainNumber][repIndex(textY,textX,transform)*3+2] * shader;
 						if (here->surfaceType == SURFACE_GRASS)
 						{
-							finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3] = finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3]*here->colour[0]/255;
-							finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+1] = finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+1]*here->colour[1]/255;
-							finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+2] = finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+2]*here->colour[2]/255;
+							finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3] = max(0.f,finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3]*here->colour[0]/255);
+							finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+1] = max(0.f,finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+1]*here->colour[1]/255);
+							finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+2] = max(0.f,finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+2]*here->colour[2]/255);
 						}
 					}
 				}
