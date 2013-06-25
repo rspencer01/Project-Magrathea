@@ -123,3 +123,36 @@ void displayHUD()
 		writeString(10,windowHeight-20,"<f>");
 	}
 }
+
+void RenderCanvasBegin (int left, int right, int bottom, int top, int size)
+{
+
+  glDisable (GL_CULL_FACE);
+  glDisable (GL_FOG);
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_LIGHTING);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  glEnable (GL_BLEND);
+  glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable (GL_TEXTURE_2D);
+  glViewport (0, 0, size, size);
+  glMatrixMode (GL_PROJECTION);
+  glPushMatrix ();
+  glLoadIdentity ();
+  glOrtho (left, right, bottom, top, 0.1f, 2048);
+  glMatrixMode (GL_MODELVIEW);
+  glPushMatrix ();
+  glLoadIdentity();
+  glTranslatef(0, 0, -10.0f);
+
+}
+
+void RenderCanvasEnd ()
+{
+  glMatrixMode (GL_PROJECTION);
+  glPopMatrix ();  
+  glTexParameteri (GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);	
+  glTexParameteri (GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);	
+  glMatrixMode (GL_MODELVIEW);
+  glPopMatrix ();  
+}
