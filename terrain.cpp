@@ -31,60 +31,74 @@ int repIndex(int a,int b,int c)
 	return ((a+TERRAIN_RAW_SIZE)%TERRAIN_RAW_SIZE)*TERRAIN_RAW_SIZE + ((b+TERRAIN_RAW_SIZE)%TERRAIN_RAW_SIZE);
 }
 
+
+void RenderCanvasBegin (int left, int right, int bottom, int top, int size)
+{
+
+  glDisable (GL_CULL_FACE);
+  glDisable (GL_FOG);
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_LIGHTING);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  glEnable (GL_BLEND);
+  glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable (GL_TEXTURE_2D);
+  glViewport (0, 0, size, size);
+  glMatrixMode (GL_PROJECTION);
+  glPushMatrix ();
+  glLoadIdentity ();
+  glOrtho (left, right, bottom, top, 0.1f, 2048);
+  glMatrixMode (GL_MODELVIEW);
+  glPushMatrix ();
+  glLoadIdentity();
+  glTranslatef(0, 0, -10.0f);
+
+}
+
+void RenderCanvasEnd ()
+{
+  glMatrixMode (GL_PROJECTION);
+  glPopMatrix ();  
+  glTexParameteri (GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);	
+  glTexParameteri (GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);	
+  glMatrixMode (GL_MODELVIEW);
+  glPopMatrix ();  
+}
+
+
 GLuint MakeCompositeTerrain(int size,World* parent,int detail,int X,int Y)
 {
-	detail = detail<1?1:detail>13?13:detail;
-	int TERRAIN_OUTPUT_TEXTURE_SIZE = 1<<detail;
-	unsigned char* finalRGB = new unsigned char[TERRAIN_OUTPUT_TEXTURE_SIZE*TERRAIN_OUTPUT_TEXTURE_SIZE*3];
-	//Lets rewrite this, shall we?
-	//First clear the slate
-	memset(finalRGB,100,TERRAIN_OUTPUT_TEXTURE_SIZE*TERRAIN_OUTPUT_TEXTURE_SIZE*3);
-	//Now, iterate over all the points in this area
-	int splotSize = TERRAIN_OUTPUT_TEXTURE_SIZE/(size*2)*1.9;
+	int textureSize = 100;
+	GLuint textureId;
+	
+	//New texture
+	glGenTextures(1,&textureId);
+	glBindTexture(GL_TEXTURE_2D,textureId);
+ 	glTexParameteri (GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);	
+    glTexParameteri (GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	//Fill it with nothing
+    glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, textureSize, textureSize, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
-	vector<pair<int,int> > orders [TERRAIN_COUNT];
-	for (int y = Y;y<Y+size;y++)
-		for (int x = X;x<X+size;x++)
-		{
-			sbit* here = parent->getSAt(y,x);
-			orders[here->surfaceType].push_back(make_pair(y,x));
-		}
-	for (int terrainNumber = 0;terrainNumber<TERRAIN_COUNT;terrainNumber++)
-		while (! orders[terrainNumber].empty())
-		{
-			int y = orders[terrainNumber].back().first;
-			int x = orders[terrainNumber].back().second;
-			orders[terrainNumber].pop_back();
-			int terrX = (x-X)*TERRAIN_OUTPUT_TEXTURE_SIZE/size;
-			int terrY = (y-Y)*TERRAIN_OUTPUT_TEXTURE_SIZE/size;
-			sbit* here = parent->getSAt(y,x);
-			int transform = rand();
-			for (int dy = max(0,terrY-splotSize);dy<min(TERRAIN_OUTPUT_TEXTURE_SIZE,terrY+splotSize);dy++)
-				for (int dx = max(0,terrX-splotSize);dx<min(TERRAIN_OUTPUT_TEXTURE_SIZE,terrX+splotSize);dx++)
-				{
-					int textX = (dx-(terrX-splotSize))*TERRAIN_RAW_SIZE/(splotSize*2);
-					int textY = (dy-(terrY-splotSize))*TERRAIN_RAW_SIZE/(splotSize*2);
-					//Transparent colour is black
-					if ( textureData[terrainNumber][repIndex(textY,textX,transform)*3] +
-						 textureData[terrainNumber][repIndex(textY,textX,transform)*3+1] +
-						 textureData[terrainNumber][repIndex(textY,textX,transform)*3+2]  != 0)
-					{
-						float shader = max(0.1f,Vector3(0.707107,0.707107,0).dot(Vector3(here->normal)));
+	//Save viewport
+	int viewport[4];
+	glGetIntegerv(GL_VIEWPORT,(int*)viewport);
+	
+	RenderCanvasBegin(0,0,textureSize,textureSize,textureSize);
 
 
-						finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3]   = textureData[terrainNumber][repIndex(textY,textX,transform)*3] * shader;
-						finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+1] = textureData[terrainNumber][repIndex(textY,textX,transform)*3+1] * shader;
-						finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+2] = textureData[terrainNumber][repIndex(textY,textX,transform)*3+2] * shader;
-						if (here->surfaceType == SURFACE_GRASS)
-						{
-							finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3] = max(0.f,finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3]*here->colour[0]/255);
-							finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+1] = max(0.f,finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+1]*here->colour[1]/255);
-							finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+2] = max(0.f,finalRGB[(dy*TERRAIN_OUTPUT_TEXTURE_SIZE+dx)*3+2]*here->colour[2]/255);
-						}
-					}
-				}
-		}
-	GLuint TextureNumber = LoadTextureFromData(finalRGB,TERRAIN_OUTPUT_TEXTURE_SIZE,TERRAIN_OUTPUT_TEXTURE_SIZE);
-	delete finalRGB;
-	return TextureNumber;
+	glClearColor (1,0,0,1);
+	
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	
+	glLoadIdentity();
+
+	//Write the output to the texture
+	glBindTexture(GL_TEXTURE_2D, textureId);
+  //And copy it into the big texture
+	glCopyTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, 0, 0, textureSize, textureSize);
+	RenderCanvasEnd();
+	//Restore viewport
+	glViewport(viewport[0],viewport[1],viewport[2],viewport[3]);
+	
+	return textureId;
 }
