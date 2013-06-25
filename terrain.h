@@ -13,17 +13,8 @@
 
 #define TERRAIN_RAW_SIZE 512
 
-struct terrainBit
-{
-	int x,y;
-	float  shade;
-	
-	float grassMult[3];
-};
-
 
 void initTerrain();
-GLuint MakeCompositeTerrain(int size,World* parent,int detail,int x,int y);
-
+GLuint getTerrainTexture(int);
 
 #endif

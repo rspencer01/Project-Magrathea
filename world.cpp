@@ -13,7 +13,7 @@
 using namespace std;
 
 #define ROUND(_a,_b) (int(_b)*(int(_a)/int(_b)))
-#define REGION_SIZE 32
+#define REGION_SIZE 128
 
 World::World(int sizeInMetres)
 {
@@ -42,36 +42,36 @@ void World::Render(float x, float y)
 	// CREATION OF NEW REGIONS
 	for (list<list<region*> >::iterator it = visibleRegions.begin();it!=visibleRegions.end();it++)
 	{
-		if (((*it).front()->x > (regionXIndex-sizeOfVisibleSquareInRegions/2)*regionSize) && ((*it).front()->x-regionSize>0))
-			(*it).push_front(new region(regionSize+1,(*it).front()->x-regionSize,(*it).front()->y,this));
-		if (((*it).back()->x  < (regionXIndex+sizeOfVisibleSquareInRegions/2)*regionSize) && ((*it).back()->x+regionSize<WORLD_SIZE-regionSize))
-			(*it).push_back(new region(regionSize+1,(*it).back()->x+regionSize,(*it).front()->y,this));
+		if (((*it).front()->origin_x > (regionXIndex-sizeOfVisibleSquareInRegions/2)*regionSize) && ((*it).front()->origin_x-regionSize>0))
+			(*it).push_front(new region(regionSize+1,(*it).front()->origin_x-regionSize,(*it).front()->origin_y,this));
+		if (((*it).back()->origin_x  < (regionXIndex+sizeOfVisibleSquareInRegions/2)*regionSize) && ((*it).back()->origin_x+regionSize<WORLD_SIZE-regionSize))
+			(*it).push_back(new region(regionSize+1,(*it).back()->origin_x+regionSize,(*it).front()->origin_y,this));
 	}
 	
-	if ((visibleRegions.front().front()->y > (regionYIndex-sizeOfVisibleSquareInRegions/2)*regionSize) && (visibleRegions.front().front()->y-regionSize > 0))
+	if ((visibleRegions.front().front()->origin_y > (regionYIndex-sizeOfVisibleSquareInRegions/2)*regionSize) && (visibleRegions.front().front()->origin_y-regionSize > 0))
 	{
 		list<region*> newRow;
-		newRow.push_back(new region(regionSize+1,visibleRegions.front().front()->x,visibleRegions.front().front()->y-regionSize,this));
+		newRow.push_back(new region(regionSize+1,visibleRegions.front().front()->origin_x,visibleRegions.front().front()->origin_y-regionSize,this));
 		visibleRegions.push_front(newRow);
 	}
 	
-	if ((visibleRegions.back().front()->y < (regionYIndex+sizeOfVisibleSquareInRegions/2)*regionSize) && (visibleRegions.back().front()->y+regionSize < WORLD_SIZE-regionSize))
+	if ((visibleRegions.back().front()->origin_y < (regionYIndex+sizeOfVisibleSquareInRegions/2)*regionSize) && (visibleRegions.back().front()->origin_y+regionSize < WORLD_SIZE-regionSize))
 	{
 		list<region*> newRow;
-		newRow.push_back(new region(regionSize+1,visibleRegions.front().front()->x,visibleRegions.back().front()->y+regionSize,this));
+		newRow.push_back(new region(regionSize+1,visibleRegions.front().front()->origin_x,visibleRegions.back().front()->origin_y+regionSize,this));
 		visibleRegions.push_back(newRow);
 	}
 	// REMOVAL OF EXTRA REGIONS
 	for (list<list<region*> >::iterator it = visibleRegions.begin();it!=visibleRegions.end();it++)
 	{
 		if ((*it).size()>0)
-			if ((*it).front()->x < (regionXIndex-sizeOfVisibleSquareInRegions/2-1)*regionSize)
+			if ((*it).front()->origin_x < (regionXIndex-sizeOfVisibleSquareInRegions/2-1)*regionSize)
 			{
 				delete (*it).front();
 				(*it).pop_front();
 			}
 		if ((*it).size()>0)
-			if ((*it).back()->x > (regionXIndex+sizeOfVisibleSquareInRegions/2+1)*regionSize)
+			if ((*it).back()->origin_x > (regionXIndex+sizeOfVisibleSquareInRegions/2+1)*regionSize)
 			{
 				delete (*it).back();
 				(*it).pop_back();
@@ -80,7 +80,7 @@ void World::Render(float x, float y)
 	if (visibleRegions.front().size()==0)
 		visibleRegions.pop_front();
 	else	
-		if (visibleRegions.front().front()->y < (regionYIndex-sizeOfVisibleSquareInRegions/2-1)*regionSize)
+		if (visibleRegions.front().front()->origin_y < (regionYIndex-sizeOfVisibleSquareInRegions/2-1)*regionSize)
 		{
 			for (list<region*>::iterator it = visibleRegions.front().begin();it!=visibleRegions.front().end();it++)
 				delete *it;
@@ -89,7 +89,7 @@ void World::Render(float x, float y)
 	if (visibleRegions.back().size()==0)
 		visibleRegions.pop_back();
 	else
-		if (visibleRegions.back().front()->y > (regionYIndex+sizeOfVisibleSquareInRegions/2+1)*regionSize)
+		if (visibleRegions.back().front()->origin_y > (regionYIndex+sizeOfVisibleSquareInRegions/2+1)*regionSize)
 		{
 			for (list<region*>::iterator it = visibleRegions.back().begin();it!=visibleRegions.back().end();it++)
 				delete *it;
@@ -101,7 +101,7 @@ void World::Render(float x, float y)
 		for (list<region*>::iterator it2 = (*it).begin(); it2!=(*it).end() ; it2++)
 		{
 			nr++;
-			float thisDetail = renderDetail - dist((*it2)->x,(*it2)->y,x,y) / (2*regionSize);
+			float thisDetail = renderDetail - dist((*it2)->origin_x,(*it2)->origin_y,x,y) / (2*regionSize);
 			(*it2)->Render(max(3,(int)thisDetail));
 		}
 	/*

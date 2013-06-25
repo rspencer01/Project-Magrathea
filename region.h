@@ -35,8 +35,14 @@ class region
 		sbit** surface;
 		int getIndex(int,int);
 		vector<grass> grasses;
+		bool finishedTexture;
+		void doNextTexture();
+		void doPatch(int,int);
+		int texX;
+		int texY;
+		int patch_steps;
 	public:
-		int x,y,randSeed;
+		int origin_x,origin_y,randSeed;
 		float* altitudes;
 		int size;
 		region(int,int,int,World*);

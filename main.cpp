@@ -73,7 +73,6 @@ int main(int argc, char**argv)
 	glFogf(GL_FOG_END, 500.0f); 
 
 	glEnable(GL_FOG); 
-	
 	glutMainLoop();
 }
 

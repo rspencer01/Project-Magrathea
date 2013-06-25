@@ -130,7 +130,6 @@ void RenderCanvasBegin (int left, int right, int bottom, int top, int size)
   glDisable (GL_CULL_FACE);
   glDisable (GL_FOG);
   glDisable(GL_DEPTH_TEST);
-  glDisable(GL_LIGHTING);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   glEnable (GL_BLEND);
   glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -155,4 +154,6 @@ void RenderCanvasEnd ()
   glTexParameteri (GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);	
   glMatrixMode (GL_MODELVIEW);
   glPopMatrix ();  
+  glEnable(GL_FOG);
+  glEnable(GL_DEPTH_TEST);
 }
