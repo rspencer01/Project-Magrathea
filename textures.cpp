@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 
+
 GLuint LoadTextureFromData(unsigned char* data,int width,int height)
 {
     GLuint texture;

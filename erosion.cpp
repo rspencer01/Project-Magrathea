@@ -148,7 +148,9 @@ void entropy_erode (float* emap)
       emap[index] = val;
     }
   }
-  
+  for (y = 0; y < EROSION_SIZE; y++) 
+    for (x = 0; x < EROSION_SIZE; x++)
+		emap[getIndex(y,x)] *= emap[getIndex(y,x)];
   
   delete[] buffer;
   //re-normalize the map

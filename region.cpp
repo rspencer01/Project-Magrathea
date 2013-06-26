@@ -15,8 +15,8 @@
 region::region(int _size,int _x,int _y,World* _parent)
 {
 	size = _size;
-	x = _x;
-	y = _y;
+	origin_x = _x;
+	origin_y = _y;
 	parent = _parent;
 	TriangleData = NULL;
 	VertexData = NULL;
@@ -24,6 +24,9 @@ region::region(int _size,int _x,int _y,World* _parent)
 	surface =NULL;
 	numTri = NULL;
 	bestDetail = -1;
+	finishedTexture = false;
+	TextureNumber = -1;
+	texX = texY = 0;
 }
 
 region::~region()
@@ -99,20 +102,155 @@ void region::Triangulate(int detail)
 	}	
 }
 
+void region::doPatch(int patchx,int patchy)
+{
+  int texture_step = size / patch_steps;
+//Three heightmap points below where we are
+  int startx = texX * texture_step - 3;
+  int starty = texY * texture_step - 3;
+  int endx = startx + texture_step + 5;
+  int endy = starty + texture_step + 6;
+  glColor3f(1,0,0);
+  glBindTexture(GL_TEXTURE_2D,getTerrainTexture(SURFACE_ROCK));
+  for (int y = starty; y < endy - 1; y++)
+  {
+    glBegin (GL_QUAD_STRIP);
+    for (int x = startx; x < endx; x++) 
+	{
+      int world_x = origin_x + x;
+      int world_y = origin_y + y;
+      glTexCoord2f ((float)x / 8, (float)y / 8);
+	  float* surface_color = parent->getSAt(world_x, world_y)->colour;
+      glColor3f (surface_color[0]/256,surface_color[1]/256,surface_color[2]/256);
+      glVertex2f ((float)x, (float)y);
+      glTexCoord2f ((float)x / 8, (float)(y + 1) / 8);
+      surface_color = parent->getSAt(world_x, world_y+1)->colour;
+      glColor3f (surface_color[0]/256,surface_color[1]/256,surface_color[2]/256);
+      glVertex2f ((float)x, (float)(y + 1));
+    }
+    glEnd ();
+  }
+
+  for (int stage = 0; stage < TERRAIN_COUNT; stage++) 
+  {
+    glBindTexture (GL_TEXTURE_2D, getTerrainTexture(stage));
+	glTexParameteri (GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);	
+    glTexParameteri (GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);	
+
+    for (int y = starty; y < endy - 1; y++) 
+	{
+      for (int  x = startx; x < endx; x++) 
+	  {
+        int world_x = origin_x + x;
+        int world_y = origin_y + y;
+		int surfaceNumber = parent->getSAt(world_y, world_x)->surfaceType;
+        if (surfaceNumber != stage)
+          continue;
+        float posx = (float)x;
+        float posy = (float)y;
+        float tile = 0.66f*1.5; 
+        glPushMatrix ();
+        glTranslatef (posx - 0.5f, posy - 0.5f, 0);
+		//Do some funky rotation, please
+        int angle = (world_x + world_y * 1000007) * 25;
+        angle %= 360;
+        glRotatef ((float)angle, 0.0f, 0.0f, 1.0f);
+		//Move us to here please
+        glTranslatef (-posx, -posy, 0);
+		float lightingMultiplyer = Vector3(parent->getSAt(world_y, world_x)->normal).dot(Vector3(1,1,0));
+		if (surfaceNumber == SURFACE_GRASS)
+		{
+			float* surface_color = parent->getSAt(world_y, world_x)->colour;
+			glColor3f (surface_color[0]/256*lightingMultiplyer,surface_color[1]/256*lightingMultiplyer,surface_color[2]/256*lightingMultiplyer);
+		}
+		else
+			glColor3f (lightingMultiplyer,lightingMultiplyer,lightingMultiplyer);
+        glBegin (GL_QUADS);
+        glTexCoord2f (0,0); glVertex2f (posx - tile, posy - tile);
+        glTexCoord2f (1,0); glVertex2f (posx + tile, posy - tile);
+        glTexCoord2f (1,1); glVertex2f (posx + tile, posy + tile);
+        glTexCoord2f (0,1); glVertex2f (posx - tile, posy + tile);
+        glEnd ();
+        glPopMatrix ();
+      }
+    }
+  }
+
+
+
+
+}
+
+
+void region::doNextTexture()
+{
+#define TEXTURE_SIZE 2048
+  if (finishedTexture)
+	return;
+
+  if ((texX==texY+1 && texY == patch_steps-1))
+  {
+	  unsigned char* dat = new unsigned char [TEXTURE_SIZE*TEXTURE_SIZE*3];
+	  glBindTexture(GL_TEXTURE_2D, TextureNumber);
+	  glGetTexImage(GL_TEXTURE_2D,0,GL_RGB,GL_UNSIGNED_BYTE,dat);
+	  gluBuild2DMipmaps(GL_TEXTURE_2D,3,TEXTURE_SIZE,TEXTURE_SIZE,GL_RGB,GL_UNSIGNED_BYTE,dat);
+	  finishedTexture = true;
+	  delete[] dat;
+  }
+  
+  
+#define TERRAIN_PATCH (size/_patch_size)
+  int viewport [4];
+  glGetIntegerv(GL_VIEWPORT,viewport);
+
+  if (TextureNumber == -1)
+  {
+	glGenTextures (1, &TextureNumber); 
+		//Set it up
+	glBindTexture(GL_TEXTURE_2D, TextureNumber);
+
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+    //We draw the terrain texture in squares called patches, but how big should they be?
+    //We can't draw more than will fit in the viewport
+    _patch_size = min (256, TEXTURE_SIZE);
+    patch_steps = TEXTURE_SIZE / _patch_size;
+    //We also don't want to do much at once. Walking a 128x128 grid in a singe frame creates stuttering. 
+    while (size / patch_steps > 64) 
+	{
+      _patch_size /= 2;
+      patch_steps = TEXTURE_SIZE / _patch_size;
+    }	
+	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	_patch_size;
+  }
+  //We do a little bit at a time...
+  if (texX == patch_steps)
+  {
+	  texY++;
+	  texX = 0;
+  }
+  {
+	RenderCanvasBegin (texX * (size / patch_steps), texX * (size / patch_steps) + (size / patch_steps), texY * (size / patch_steps), texY * (size / patch_steps) + (size / patch_steps), _patch_size);
+	doPatch (texX, texY);
+	glBindTexture(GL_TEXTURE_2D, TextureNumber);
+	//And copy it into the big texture
+	glCopyTexSubImage2D (GL_TEXTURE_2D, 0, texX * _patch_size, texY * _patch_size, 0, 0, _patch_size, _patch_size);
+	RenderCanvasEnd ();
+  }
+  texX++;
+  glViewport(viewport[0],viewport[1],viewport[2],viewport[3]);
+}
 
 void region::Render(int detail)
 {
 	if (surface==NULL)
 		populate();
-	if (bestDetail<detail)
+	if (!finishedTexture)
 	{
-		if (bestDetail>0)
-			glDeleteTextures( 1, &TextureNumber);
-		TextureNumber = MakeCompositeTerrain(size,parent,detail,x,y);		
-		bestDetail = detail;
+		doNextTexture();
 	}
 	Triangulate(detail);
-	
 
 
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -128,6 +266,10 @@ void region::Render(int detail)
   									TextureData);
 				 
 	glBindTexture(GL_TEXTURE_2D, TextureNumber);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MIN_FILTER,
+                    GL_LINEAR_MIPMAP_LINEAR);
 	glDrawElements( GL_TRIANGLES, //mode
                   numTri[detail],  //count, ie. how many indices
                   GL_UNSIGNED_INT, //type of the index array
@@ -157,7 +299,7 @@ void region::populate()
 		for (int i = 0;i<size;i++)
 			for (int j = 0;j<size;j++)
 			{
-				surface[getIndex(i,j)] = parent->getSAt(y+i,x+j);
+				surface[getIndex(i,j)] = parent->getSAt(origin_y+i,origin_x+j);
 				if (surface[getIndex(i,j)]->isGrass)
 				{
 					grasses.push_back(grass(Vector3(surface[getIndex(i,j)]->x,surface[getIndex(i,j)]->elevation,surface[getIndex(i,j)]->y),Vector3(surface[getIndex(i,j)]->normal),

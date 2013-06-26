@@ -2,17 +2,36 @@
 #include "terrain.h"
 #include "misc.h"
 #include "biome.h"
+#include "graphics.h"
 #include <assert.h>
 #include <stdio.h>
 #include <GL/glut.h>
+
 using namespace std;
-const char*    textureNames[TERRAIN_COUNT] = {"sgrassa512.raw","sdirt512.raw","swater512.raw","srock512.raw","sgrassb512.raw","ssand512.raw","ssnow512.raw"};
+const char*    textureNames[TERRAIN_COUNT] = {"swater512.raw","srock512.raw","ssand512.raw","solidDirt512a.raw","ssnow512.raw","solidGrass512a.raw","sgrassb512.raw"};
 unsigned char* textureData[TERRAIN_COUNT];
+GLuint textureIds[TERRAIN_COUNT];
 
 void initTerrain()
 {
 	for (int i = 0;i<TERRAIN_COUNT;i++)
-		textureData[i] = loadRaw(textureNames[i],TERRAIN_RAW_SIZE);
+	{
+		if (i==5 || i==3)
+		{
+			unsigned char * data = new unsigned char[TERRAIN_RAW_SIZE * TERRAIN_RAW_SIZE * 4];
+			FILE * file = fopen(textureNames[i], "rb" );
+				assert(file !=NULL);
+			fread( data, TERRAIN_RAW_SIZE * TERRAIN_RAW_SIZE * 4, 1, file );
+			fclose( file );
+    
+			textureIds[i] = LoadAlphaTextureFromData(data,TERRAIN_RAW_SIZE,TERRAIN_RAW_SIZE);
+		}
+		else
+		{
+			textureData[i] = loadRaw(textureNames[i],TERRAIN_RAW_SIZE);
+			textureIds[i] = LoadTextureFromFile(textureNames[i],TERRAIN_RAW_SIZE,TERRAIN_RAW_SIZE);
+		}
+	}
 }
 
 inline float linearInter(float x1,float x2,float t)
@@ -20,103 +39,21 @@ inline float linearInter(float x1,float x2,float t)
 	return x1*t+x2*(1.0-t);
 }
 
-inline int repIndex(int a,int b)
+int repIndex(int a,int b,int c)
 {
-	return (a%TERRAIN_RAW_SIZE)*TERRAIN_RAW_SIZE + (b%TERRAIN_RAW_SIZE);
-}
-
-
-int getPixelAt(int rgb,int terrainNumber,int i,int j,float* colour, bool doCol)
-{
-	if (! doCol)
-		return textureData[terrainNumber][repIndex(i,j+1)*3 + rgb];
-	return textureData[terrainNumber][repIndex(i,j+1)*3 + rgb] * colour[rgb]/255;
-}
-
-GLuint MakeCompositeTerrain(int size,World* parent,int detail,int X,int Y)
-{
-	detail = detail<1?1:detail>13?13:detail;
-	int TERRAIN_OUTPUT_TEXTURE_SIZE = 1<<detail;
-	unsigned char* finalRGB = new unsigned char[TERRAIN_OUTPUT_TEXTURE_SIZE*TERRAIN_OUTPUT_TEXTURE_SIZE*3];
-	//Terrains+Normals
-	float** vectorSpace = new float*[TERRAIN_COUNT+1+3];
-	for (int i = 0;i<TERRAIN_COUNT+1+3;i++)
-		vectorSpace[i] = new float[size*size];
-	//Tests confirm that this is the slow function
-	sbit* s1 = NULL;
-	sbit* s2;
-	sbit* s3;
-	sbit* s4;
-	int lastY = -1;
-	int lastX = -1;
-	for (int i = 0;i<TERRAIN_OUTPUT_TEXTURE_SIZE;i++)
+	if (c%2==0)
 	{
-		float shadowHeight = -10000.0;
-		for (int j = 0;j<TERRAIN_OUTPUT_TEXTURE_SIZE;j++)
-		{
-			int y = max(0,Y+(i*size/TERRAIN_OUTPUT_TEXTURE_SIZE));
-			int x = max(0,X+(j*size/TERRAIN_OUTPUT_TEXTURE_SIZE));
-			float fx = X+(float(j)*size/TERRAIN_OUTPUT_TEXTURE_SIZE) - x;
-			float fy = Y+(float(i)*size/TERRAIN_OUTPUT_TEXTURE_SIZE) - y;
-			
-			if (lastX!=x || lastY!=y)
-			{
-				s1 = parent->getSAt(y,x);
-				s2 = parent->getSAt(y,x+1);
-				s3 = parent->getSAt(y+1,x);
-				s4 = parent->getSAt(y+1,x+1);
-			}
-
-			int terrainNumber = s1->surfaceType;
-			int terrainNumber1 = s2->surfaceType;
-			int terrainNumber2 = s3->surfaceType;
-			int terrainNumber3 = s4->surfaceType;
-			float lighting = Vector3(1.0/1.414213,1.0/1.414213,0).dot(Vector3(s1->normal));
-			lighting = max(lighting,0.2f);
-			
-			int r1 = getPixelAt(0,terrainNumber,i,j,s1->colour,terrainNumber==SURFACE_GRASS);
-			int g1 = getPixelAt(1,terrainNumber,i,j,s1->colour,terrainNumber==SURFACE_GRASS);
-			int b1 = getPixelAt(2,terrainNumber,i,j,s1->colour,terrainNumber==SURFACE_GRASS);
-			int r2 = getPixelAt(0,terrainNumber1,i,j,s2->colour,terrainNumber1==SURFACE_GRASS);
-			int g2 = getPixelAt(1,terrainNumber1,i,j,s2->colour,terrainNumber1==SURFACE_GRASS);
-			int b2 = getPixelAt(2,terrainNumber1,i,j,s2->colour,terrainNumber1==SURFACE_GRASS);
-			int r3 = getPixelAt(0,terrainNumber2,i,j,s3->colour,terrainNumber2==SURFACE_GRASS);
-			int g3 = getPixelAt(1,terrainNumber2,i,j,s3->colour,terrainNumber2==SURFACE_GRASS);
-			int b3 = getPixelAt(2,terrainNumber2,i,j,s3->colour,terrainNumber2==SURFACE_GRASS);
-			int r4 = getPixelAt(0,terrainNumber3,i,j,s4->colour,terrainNumber3==SURFACE_GRASS);
-			int g4 = getPixelAt(1,terrainNumber3,i,j,s4->colour,terrainNumber3==SURFACE_GRASS);
-			int b4 = getPixelAt(2,terrainNumber3,i,j,s4->colour,terrainNumber3==SURFACE_GRASS);
-
-
-			int r = linearInterpolate(linearInterpolate(r1,r2,fx),linearInterpolate(r3,r4,fx),fy);
-			int g = linearInterpolate(linearInterpolate(g1,g2,fx),linearInterpolate(g3,g4,fx),fy);
-			int b = linearInterpolate(linearInterpolate(b1,b2,fx),linearInterpolate(b3,b4,fx),fy);
-
-			
-			
-			/*
-			if (shadowHeight > parent->getSAt(y,x)->elevation)
-			{
-				lighting = 0.0;
-			}
-			else
-			{
-				shadowHeight=parent->getSAt(y,x)->elevation;
-			}
-			shadowHeight-= 1.0 *float(size)/TERRAIN_OUTPUT_TEXTURE_SIZE;
-			*/
-			r = max(min(r*lighting,255.f),0.f);
-			g = max(min(g*lighting,255.f),0.f);
-			b = max(min(b*lighting,255.f),0.f);
-			finalRGB[(i*TERRAIN_OUTPUT_TEXTURE_SIZE+j)*3]   = r;
-			finalRGB[(i*TERRAIN_OUTPUT_TEXTURE_SIZE+j)*3+1] = g;
-			finalRGB[(i*TERRAIN_OUTPUT_TEXTURE_SIZE+j)*3+2] = b;
-		}
+		int d = a;
+		a = b;
+		b = d;
 	}
-	GLuint TextureNumber = LoadTextureFromData(finalRGB,TERRAIN_OUTPUT_TEXTURE_SIZE,TERRAIN_OUTPUT_TEXTURE_SIZE);
-	delete finalRGB;
-	for (int i = 0;i<TERRAIN_COUNT+1;i++)
-		delete vectorSpace[i];
-	delete vectorSpace;
-	return TextureNumber;
+	return ((a+TERRAIN_RAW_SIZE)%TERRAIN_RAW_SIZE)*TERRAIN_RAW_SIZE + ((b+TERRAIN_RAW_SIZE)%TERRAIN_RAW_SIZE);
 }
+
+GLuint getTerrainTexture(int index)
+{
+	return textureIds[index];
+}
+
+
+
