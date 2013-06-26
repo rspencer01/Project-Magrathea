@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include "region.h"
 #include "graphics.h"
 #include "terrain.h"
@@ -27,6 +28,8 @@ region::region(int _size,int _x,int _y,World* _parent)
 	finishedTexture = false;
 	TextureNumber = -1;
 	texX = texY = 0;
+	vertexVBO = -1;
+	textureVBO = -1;
 }
 
 region::~region()
@@ -64,6 +67,10 @@ void region::Triangulate(int detail)
 			VertexData[i*3 + 1] = (GLfloat)surface[i]->elevation>0?(GLfloat)surface[i]->elevation:0;
 			VertexData[i*3 + 2] = (GLfloat)surface[i]->y;
 		}
+		glGenBuffersARB(1,&vertexVBO);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertexVBO);
+		glBufferDataARB(GL_ARRAY_BUFFER_ARB, size*size*3*sizeof(float), VertexData, GL_STATIC_DRAW_ARB);
+
 	}
 	if (TextureData==NULL)
 	{
@@ -74,6 +81,9 @@ void region::Triangulate(int detail)
 				TextureData[(i*size+j)*2 + 0] = (GLfloat)((i)/float(size));
 				TextureData[(i*size+j)*2 + 1] = (GLfloat)((j)/float(size));
 			}
+		glGenBuffersARB(1,&textureVBO);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, textureVBO);
+		glBufferDataARB(GL_ARRAY_BUFFER_ARB, size*size*2*sizeof(float), TextureData, GL_STATIC_DRAW_ARB);
 	}
 	/*This is the meat of this function*/
 	if (TriangleData==NULL)
@@ -190,12 +200,8 @@ void region::doNextTexture()
 
   if ((texX==texY+1 && texY == patch_steps-1))
   {
-	  unsigned char* dat = new unsigned char [TEXTURE_SIZE*TEXTURE_SIZE*3];
-	  glBindTexture(GL_TEXTURE_2D, TextureNumber);
-	  glGetTexImage(GL_TEXTURE_2D,0,GL_RGB,GL_UNSIGNED_BYTE,dat);
-	  gluBuild2DMipmaps(GL_TEXTURE_2D,3,TEXTURE_SIZE,TEXTURE_SIZE,GL_RGB,GL_UNSIGNED_BYTE,dat);
 	  finishedTexture = true;
-	  delete[] dat;
+	  return;
   }
   
   
@@ -209,8 +215,8 @@ void region::doNextTexture()
 		//Set it up
 	glBindTexture(GL_TEXTURE_2D, TextureNumber);
 
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     //We draw the terrain texture in squares called patches, but how big should they be?
     //We can't draw more than will fit in the viewport
     _patch_size = min (256, TEXTURE_SIZE);
@@ -256,20 +262,18 @@ void region::Render(int detail)
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glColor3f(1,1,1);
+	glBindBufferARB(GL_ARRAY_BUFFER_ARB,vertexVBO);
 	glVertexPointer( 3,   //3 components per vertex (x,y,z)
                  GL_FLOAT,
                  0,
-                 VertexData);	
+                 0);
+	glBindBufferARB(GL_ARRAY_BUFFER_ARB,textureVBO);
     glTexCoordPointer(2,
-  									GL_FLOAT,
-  									0,
-  									TextureData);
-				 
+  					  GL_FLOAT,
+  					  0,
+  					  0);
 	glBindTexture(GL_TEXTURE_2D, TextureNumber);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D,
-                    GL_TEXTURE_MIN_FILTER,
-                    GL_LINEAR_MIPMAP_LINEAR);
+	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB,0);
 	glDrawElements( GL_TRIANGLES, //mode
                   numTri[detail],  //count, ie. how many indices
                   GL_UNSIGNED_INT, //type of the index array

@@ -42,6 +42,8 @@ class region
 		int texY;
 		int patch_steps;
 		int _patch_size;
+		GLuint vertexVBO;
+		GLuint textureVBO;
 	public:
 		int origin_x,origin_y,randSeed;
 		float* altitudes;
