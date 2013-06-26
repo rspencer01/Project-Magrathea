@@ -1,3 +1,7 @@
+#pragma comment(lib,"glew32.lib")
+
+#include <GL/glew.h>
+#include <GL/glu.h>
 #include <GL/glut.h>
 #include <math.h>
 #include <algorithm>
@@ -36,6 +40,22 @@ int main(int argc, char**argv)
 	glutInitWindowSize(500,500);
 	glutInitWindowPosition(100,100);
 	glutCreateWindow("Terrain");
+	
+	 //Initialize GLEW 
+	GLenum glewError = glewInit(); 
+	if( glewError != GLEW_OK ) 
+	{ 
+		printf( "Error initializing GLEW! %s\n", glewGetErrorString( glewError ) ); 
+		while (1);
+	}
+	if (!GL_EXT_framebuffer_object )
+	{
+		printf("Framebuffer not implimented\n");
+		while(1);
+	}
+
+
+
 	glEnable(GL_DEPTH_TEST);
 
 	glEnable ( GL_COLOR_MATERIAL ) ;
