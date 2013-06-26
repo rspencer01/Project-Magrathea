@@ -13,4 +13,6 @@ void addTriangles(int);
 void displayHUD();
 void toggleHUD();
 void writeString(int, int,const char* format, ... );
+void RenderCanvasBegin (int left, int right, int bottom, int top, int size);
+void RenderCanvasEnd();
 #endif
