@@ -11,6 +11,7 @@
 #include "misc.h"
 #include "sky.h"
 
+
 void display(void);
 void reshape(int,int);
 void keyPressed (unsigned char,int,int);

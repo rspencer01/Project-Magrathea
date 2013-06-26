@@ -41,6 +41,7 @@ class region
 		int texX;
 		int texY;
 		int patch_steps;
+		int _patch_size;
 	public:
 		int origin_x,origin_y,randSeed;
 		float* altitudes;

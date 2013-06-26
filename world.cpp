@@ -13,7 +13,7 @@
 using namespace std;
 
 #define ROUND(_a,_b) (int(_b)*(int(_a)/int(_b)))
-#define REGION_SIZE 128
+#define REGION_SIZE 32
 
 World::World(int sizeInMetres)
 {
@@ -22,7 +22,6 @@ World::World(int sizeInMetres)
 	regionSize = REGION_SIZE;
 	sizeOfVisibleSquareInRegions = 1;
 	hm = new heightMap();
-	printf("DONE\n");
 	dataBook = new book(this);
 	renderDetail = 5;
 }

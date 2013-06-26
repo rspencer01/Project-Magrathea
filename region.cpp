@@ -143,22 +143,27 @@ void region::doPatch(int patchx,int patchy)
 	  {
         int world_x = origin_x + x;
         int world_y = origin_y + y;
-		int surfaceNumber = parent->getSAt(world_x, world_y)->surfaceType;
+		int surfaceNumber = parent->getSAt(world_y, world_x)->surfaceType;
         if (surfaceNumber != stage)
           continue;
         float posx = (float)x;
         float posy = (float)y;
-        float tile = 0.66f; 
+        float tile = 0.66f*1.5; 
         glPushMatrix ();
         glTranslatef (posx - 0.5f, posy - 0.5f, 0);
 		//Do some funky rotation, please
-        int angle = (world_x + world_y * 2) * 25;
+        int angle = (world_x + world_y * 1000007) * 25;
         angle %= 360;
         glRotatef ((float)angle, 0.0f, 0.0f, 1.0f);
 		//Move us to here please
         glTranslatef (-posx, -posy, 0);
-		float* surface_color = parent->getSAt(world_x, world_y)->colour;
-        glColor3f (surface_color[0]/256,surface_color[1]/256,surface_color[2]/256);
+		if (surfaceNumber == SURFACE_GRASS)
+		{
+			float* surface_color = parent->getSAt(world_y, world_x)->colour;
+			glColor3f (surface_color[0]/256,surface_color[1]/256,surface_color[2]/256);
+		}
+		else
+			glColor3f (1,1,1);
         glBegin (GL_QUADS);
         glTexCoord2f (0,0); glVertex2f (posx - tile, posy - tile);
         glTexCoord2f (1,0); glVertex2f (posx + tile, posy - tile);
@@ -178,14 +183,21 @@ void region::doPatch(int patchx,int patchy)
 
 void region::doNextTexture()
 {
-  if (texX==texY+1 && texY == patch_steps-1)
+#define TEXTURE_SIZE 512
+  if (finishedTexture)
+	return;
+
+  if ((texX==texY+1 && texY == patch_steps-1))
   {
+	  unsigned char* dat = new unsigned char [TEXTURE_SIZE*TEXTURE_SIZE*3];
+	  glBindTexture(GL_TEXTURE_2D, TextureNumber);
+	  glGetTexImage(GL_TEXTURE_2D,0,GL_RGB,GL_UNSIGNED_BYTE,dat);
+	  gluBuild2DMipmaps(GL_TEXTURE_2D,3,TEXTURE_SIZE,TEXTURE_SIZE,GL_RGB,GL_UNSIGNED_BYTE,dat);
 	  finishedTexture = true;
-	  return;
+	  delete[] dat;
   }
-#define TEXTURE_SIZE 1024
-  int _patch_size = 32;
-  patch_steps = TEXTURE_SIZE/_patch_size;
+  
+  
 #define TERRAIN_PATCH (size/_patch_size)
   int viewport [4];
   glGetIntegerv(GL_VIEWPORT,viewport);
@@ -195,21 +207,22 @@ void region::doNextTexture()
 	glGenTextures (1, &TextureNumber); 
 		//Set it up
 	glBindTexture(GL_TEXTURE_2D, TextureNumber);
-	glTexParameteri (GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);	
-	glTexParameteri (GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);	
+
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR );
     //We draw the terrain texture in squares called patches, but how big should they be?
     //We can't draw more than will fit in the viewport
-    _patch_size = min (128, TEXTURE_SIZE);
+    _patch_size = min (256, TEXTURE_SIZE);
     patch_steps = TEXTURE_SIZE / _patch_size;
     //We also don't want to do much at once. Walking a 128x128 grid in a singe frame creates stuttering. 
-    while (size / patch_steps > 32) 
+    while (size / patch_steps > 64) 
 	{
       _patch_size /= 2;
       patch_steps = TEXTURE_SIZE / _patch_size;
     }	
 	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	_patch_size;
   }
-
   //We do a little bit at a time...
   if (texX == patch_steps)
   {
@@ -237,7 +250,6 @@ void region::Render(int detail)
 		doNextTexture();
 	}
 	Triangulate(detail);
-	
 
 
 	glEnableClientState(GL_VERTEX_ARRAY);
