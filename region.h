@@ -44,6 +44,8 @@ class region
 		int _patch_size;
 		GLuint vertexVBO;
 		GLuint textureVBO;
+		GLuint indexVBO;
+		void initialise();
 	public:
 		int origin_x,origin_y,randSeed;
 		float* altitudes;

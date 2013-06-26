@@ -109,6 +109,9 @@ void region::Triangulate(int detail)
 				TriangleData[detail][count++] = ((i-adetail)*size)+j-adetail;
 			}		
 		numTri[detail] = count;
+		glGenBuffersARB(1,&indexVBO);
+		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexVBO);
+		glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, count*sizeof(int), TriangleData[detail], GL_STATIC_DRAW_ARB);
 	}	
 }
 
@@ -219,7 +222,7 @@ void region::doNextTexture()
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     //We draw the terrain texture in squares called patches, but how big should they be?
     //We can't draw more than will fit in the viewport
-    _patch_size = min (256, TEXTURE_SIZE);
+    _patch_size = min (512, TEXTURE_SIZE);
     patch_steps = TEXTURE_SIZE / _patch_size;
     //We also don't want to do much at once. Walking a 128x128 grid in a singe frame creates stuttering. 
     while (size / patch_steps > 64) 
@@ -273,12 +276,14 @@ void region::Render(int detail)
   					  0,
   					  0);
 	glBindTexture(GL_TEXTURE_2D, TextureNumber);
-	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB,0);
+	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB,indexVBO);
 	glDrawElements( GL_TRIANGLES, //mode
                   numTri[detail],  //count, ie. how many indices
                   GL_UNSIGNED_INT, //type of the index array
-                  TriangleData[detail]);
+                  0);
   
+	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB,0);
+	glBindBufferARB(GL_ARRAY_BUFFER_ARB,0);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	
