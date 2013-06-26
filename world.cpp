@@ -15,6 +15,7 @@ using namespace std;
 #define ROUND(_a,_b) (int(_b)*(int(_a)/int(_b)))
 #define REGION_SIZE 32
 
+
 World::World(int sizeInMetres)
 {
 	initErosion();

@@ -157,13 +157,14 @@ void region::doPatch(int patchx,int patchy)
         glRotatef ((float)angle, 0.0f, 0.0f, 1.0f);
 		//Move us to here please
         glTranslatef (-posx, -posy, 0);
+		float lightingMultiplyer = Vector3(parent->getSAt(world_y, world_x)->normal).dot(Vector3(1,1,0));
 		if (surfaceNumber == SURFACE_GRASS)
 		{
 			float* surface_color = parent->getSAt(world_y, world_x)->colour;
-			glColor3f (surface_color[0]/256,surface_color[1]/256,surface_color[2]/256);
+			glColor3f (surface_color[0]/256*lightingMultiplyer,surface_color[1]/256*lightingMultiplyer,surface_color[2]/256*lightingMultiplyer);
 		}
 		else
-			glColor3f (1,1,1);
+			glColor3f (lightingMultiplyer,lightingMultiplyer,lightingMultiplyer);
         glBegin (GL_QUADS);
         glTexCoord2f (0,0); glVertex2f (posx - tile, posy - tile);
         glTexCoord2f (1,0); glVertex2f (posx + tile, posy - tile);
@@ -183,7 +184,7 @@ void region::doPatch(int patchx,int patchy)
 
 void region::doNextTexture()
 {
-#define TEXTURE_SIZE 512
+#define TEXTURE_SIZE 2048
   if (finishedTexture)
 	return;
 
@@ -265,6 +266,10 @@ void region::Render(int detail)
   									TextureData);
 				 
 	glBindTexture(GL_TEXTURE_2D, TextureNumber);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MIN_FILTER,
+                    GL_LINEAR_MIPMAP_LINEAR);
 	glDrawElements( GL_TRIANGLES, //mode
                   numTri[detail],  //count, ie. how many indices
                   GL_UNSIGNED_INT, //type of the index array

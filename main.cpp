@@ -31,12 +31,13 @@ int main(int argc, char**argv)
 	srand(0);
 	
 	glutInit(&argc,argv);
-	//Lighting is handled by itself.
+	
 	glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
 	glutInitWindowSize(500,500);
 	glutInitWindowPosition(100,100);
 	glutCreateWindow("Terrain");
 	glEnable(GL_DEPTH_TEST);
+
 	glEnable ( GL_COLOR_MATERIAL ) ;
 	glEnable( GL_TEXTURE_2D );
 	glEnable( GL_BLEND );
