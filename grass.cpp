@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <GL/glut.h>
 #include <assert.h>
-GLuint texture = 0;
+GLuint grassTexture = 0;
 
 grass::grass(Vector3 _position,Vector3 _normal,World* _parent,float _height)
 {
@@ -12,16 +12,15 @@ grass::grass(Vector3 _position,Vector3 _normal,World* _parent,float _height)
 	position = _position;
 	height = _height;
 	normal = _normal;
-	if (texture==0)
+	if (grassTexture==0)
 	{
-    unsigned char * data = new unsigned char[256 * 256 * 4];
-    FILE * file = fopen("grassrgba256.raw", "rb" );
+		unsigned char * data = new unsigned char[256 * 256 * 4];
+		FILE * file = fopen("grassrgba256.raw", "rb" );
 		assert(file !=NULL);
-    fread( data, 256 * 256 * 4, 1, file );
-    fclose( file );
-    
-    texture = LoadAlphaTextureFromData(data,256,256);
-    delete [] data;
+		fread( data, 256 * 256 * 4, 1, file );
+		fclose( file );
+		grassTexture = LoadAlphaTextureFromData(data,256,256);
+		delete [] data;
 	}
 }
 
@@ -29,7 +28,7 @@ void grass::Render()
 {
 	Vector3* col = new Vector3(parent->getSAt((int)position.z,(int)position.x)->colour);
 	glColor3f((GLfloat)(col->x/256.0),(GLfloat)(col->y/256.0),(GLfloat)(col->z/256.0));
-	glBindTexture( GL_TEXTURE_2D, texture );
+	glBindTexture( GL_TEXTURE_2D, grassTexture );
 	glBegin(GL_TRIANGLES);
 	glTexCoord2d(0.0,1.0);
 	glVertex3f(position.x-1,position.y+0,position.z+0);
