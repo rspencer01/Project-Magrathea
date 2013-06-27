@@ -20,26 +20,17 @@ region::region(int _size,int _x,int _y,World* _parent)
 	origin_y = _y;
 	parent = _parent;
 	TriangleData = NULL;
-	VertexData = NULL;
-	TextureData = NULL;
-	surface =NULL;
 	numTri = NULL;
 	bestDetail = -1;
 	finishedTexture = false;
 	TextureNumber = -1;
 	texX = texY = 0;
-	vertexVBO = -1;
-	textureVBO = -1;
+	dataVBO = -1;
+	initialised = false;
 }
 
 region::~region()
 {
-	if (surface!=NULL)
-		delete[] surface;
-	if (VertexData!=NULL)
-		delete[] VertexData;
-	if (TextureData!=NULL)
-		delete[] TextureData;
 	if (TriangleData!=NULL)
 	{
 		for (int i = 0;i<20;i++)
@@ -58,32 +49,28 @@ int region::getIndex(int x,int y)
 
 void region::Triangulate(int detail)
 {
-	if (VertexData==NULL)
+	if (dataVBO==-1)
 	{
-		VertexData = new GLfloat[size*size*3];
-		for (int i = 0;i<size*size;i++)
-		{
-			VertexData[i*3 + 0] = (GLfloat)surface[i]->x;
-			VertexData[i*3 + 1] = (GLfloat)surface[i]->elevation>0?(GLfloat)surface[i]->elevation:0;
-			VertexData[i*3 + 2] = (GLfloat)surface[i]->y;
-		}
-		glGenBuffersARB(1,&vertexVBO);
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertexVBO);
-		glBufferDataARB(GL_ARRAY_BUFFER_ARB, size*size*3*sizeof(float), VertexData, GL_STATIC_DRAW_ARB);
-
-	}
-	if (TextureData==NULL)
-	{
-		TextureData = new GLfloat[size*size*2];	
+		float* VertexAndTextureData = new GLfloat[size*size*5];
+		for (int y = 0;y<size;y++)
+			for (int x = 0;x<size;x++)
+			{
+				sbit* here = parent->getSAt(origin_y+y,origin_x+x);
+				VertexAndTextureData[(y*size+x)*3 + 0] = here->x;
+				VertexAndTextureData[(y*size+x)*3 + 1] = here->elevation>0?here->elevation:0;
+				VertexAndTextureData[(y*size+x)*3 + 2] = here->y;
+			}
 		for (int i = 0;i<size;i++)
 			for (int j = 0;j<size;j++)
 			{
-				TextureData[(i*size+j)*2 + 0] = (GLfloat)((i)/float(size));
-				TextureData[(i*size+j)*2 + 1] = (GLfloat)((j)/float(size));
+				VertexAndTextureData[size*size*3+(i*size+j)*2 + 0] = (GLfloat)((i)/float(size));
+				VertexAndTextureData[size*size*3+(i*size+j)*2 + 1] = (GLfloat)((j)/float(size));
 			}
-		glGenBuffersARB(1,&textureVBO);
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, textureVBO);
-		glBufferDataARB(GL_ARRAY_BUFFER_ARB, size*size*2*sizeof(float), TextureData, GL_STATIC_DRAW_ARB);
+		glGenBuffers(1,&dataVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, dataVBO);
+		glBufferData(GL_ARRAY_BUFFER, size*size*5*sizeof(float), VertexAndTextureData,GL_STATIC_DRAW);
+		delete[] VertexAndTextureData;
+		
 	}
 	/*This is the meat of this function*/
 	if (TriangleData==NULL)
@@ -109,12 +96,12 @@ void region::Triangulate(int detail)
 				TriangleData[detail][count++] = ((i-adetail)*size)+j-adetail;
 			}		
 		numTri[detail] = count;
-		glGenBuffersARB(1,&indexVBO);
-		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexVBO);
-		glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, count*sizeof(int), TriangleData[detail], GL_STATIC_DRAW_ARB);
+		glGenBuffers(1,&indexVBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexVBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, count*sizeof(int), TriangleData[detail], GL_STATIC_DRAW);
 	}	
 }
-
+/*
 void region::doPatch(int patchx,int patchy)
 {
   int texture_step = size / patch_steps;
@@ -192,98 +179,69 @@ void region::doPatch(int patchx,int patchy)
 
 
 
-}
+}*/
 
 
 void region::doNextTexture()
 {
-#define TEXTURE_SIZE 2048
+	#define TEXTURE_SIZE 2048
   if (finishedTexture)
 	return;
 
-  if ((texX==texY+1 && texY == patch_steps-1))
+  if (TextureNumber==-1)
   {
-	  finishedTexture = true;
-	  return;
+	glGenTextures(1, &TextureNumber);
+	glBindTexture(GL_TEXTURE_2D, TextureNumber);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
   }
+
   
-  
-#define TERRAIN_PATCH (size/_patch_size)
   int viewport [4];
   glGetIntegerv(GL_VIEWPORT,viewport);
 
-  if (TextureNumber == -1)
-  {
-	glGenTextures (1, &TextureNumber); 
-		//Set it up
-	glBindTexture(GL_TEXTURE_2D, TextureNumber);
+  GLuint fboId;
+  glGenFramebuffers(1, &fboId);
+  glBindFramebuffer(GL_FRAMEBUFFER, fboId);
 
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    //We draw the terrain texture in squares called patches, but how big should they be?
-    //We can't draw more than will fit in the viewport
-    _patch_size = min (512, TEXTURE_SIZE);
-    patch_steps = TEXTURE_SIZE / _patch_size;
-    //We also don't want to do much at once. Walking a 128x128 grid in a singe frame creates stuttering. 
-    while (size / patch_steps > 64) 
-	{
-      _patch_size /= 2;
-      patch_steps = TEXTURE_SIZE / _patch_size;
-    }	
-	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	_patch_size;
-  }
-  //We do a little bit at a time...
-  if (texX == patch_steps)
-  {
-	  texY++;
-	  texX = 0;
-  }
-  {
-	RenderCanvasBegin (texX * (size / patch_steps), texX * (size / patch_steps) + (size / patch_steps), texY * (size / patch_steps), texY * (size / patch_steps) + (size / patch_steps), _patch_size);
-	doPatch (texX, texY);
-	glBindTexture(GL_TEXTURE_2D, TextureNumber);
-	//And copy it into the big texture
-	glCopyTexSubImage2D (GL_TEXTURE_2D, 0, texX * _patch_size, texY * _patch_size, 0, 0, _patch_size, _patch_size);
-	RenderCanvasEnd ();
-  }
-  texX++;
+
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glViewport(viewport[0],viewport[1],viewport[2],viewport[3]);
+  finishedTexture = true;
 }
 
 void region::Render(int detail)
 {
-	if (surface==NULL)
-		populate();
 	if (!finishedTexture)
-	{
 		doNextTexture();
-	}
 	Triangulate(detail);
 
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glColor3f(1,1,1);
-	glBindBufferARB(GL_ARRAY_BUFFER_ARB,vertexVBO);
+	glBindBuffer(GL_ARRAY_BUFFER,dataVBO);
 	glVertexPointer( 3,   //3 components per vertex (x,y,z)
                  GL_FLOAT,
                  0,
                  0);
-	glBindBufferARB(GL_ARRAY_BUFFER_ARB,textureVBO);
     glTexCoordPointer(2,
   					  GL_FLOAT,
   					  0,
-  					  0);
-	glBindTexture(GL_TEXTURE_2D, TextureNumber);
-	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB,indexVBO);
+  					  (void*)(size*size*3*sizeof(float)));
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,indexVBO);
 	glDrawElements( GL_TRIANGLES, //mode
                   numTri[detail],  //count, ie. how many indices
                   GL_UNSIGNED_INT, //type of the index array
                   0);
   
-	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB,0);
-	glBindBufferARB(GL_ARRAY_BUFFER_ARB,0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+	glBindBuffer(GL_ARRAY_BUFFER,0);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	
@@ -298,23 +256,4 @@ void region::RenderGrass(int detail)
 	if (detail > 7)
 		for (unsigned int i = 0;i<grasses.size();i++)
 			grasses[i].Render();		
-}
-
-void region::populate()
-{
-	if (surface == NULL)
-	{
-		surface = new sbit*[size*size];
-		for (int i = 0;i<size;i++)
-			for (int j = 0;j<size;j++)
-			{
-				surface[getIndex(i,j)] = parent->getSAt(origin_y+i,origin_x+j);
-				if (surface[getIndex(i,j)]->isGrass)
-				{
-					grasses.push_back(grass(Vector3(surface[getIndex(i,j)]->x,surface[getIndex(i,j)]->elevation,surface[getIndex(i,j)]->y),Vector3(surface[getIndex(i,j)]->normal),
-																	parent,1.5f*surface[getIndex(i,j)]->grassHeight));
-					grasses.back().Render();
-				}
-			}
-	}
 }
