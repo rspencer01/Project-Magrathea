@@ -31,7 +31,7 @@ class region
 		vector<grass> grasses;
 		bool finishedTexture;
 		void doNextTexture();
-		void doPatch(int,int);
+		void doPatch();
 		int texX;
 		int texY;
 		int patch_steps;

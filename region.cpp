@@ -6,8 +6,12 @@
 #include "textures.h"
 #include <GL/glut.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
+
+
+#define TEXTURE_SIZE 2048
 //
 // Contains the code for the render regions: blocks of terrain that have one texture draped over them.
 //
@@ -63,8 +67,8 @@ void region::Triangulate(int detail)
 		for (int i = 0;i<size;i++)
 			for (int j = 0;j<size;j++)
 			{
-				VertexAndTextureData[size*size*3+(i*size+j)*2 + 0] = (GLfloat)((i)/float(size));
-				VertexAndTextureData[size*size*3+(i*size+j)*2 + 1] = (GLfloat)((j)/float(size));
+				VertexAndTextureData[size*size*3+(i*size+j)*2 + 0] = (GLfloat)((j)/float(size));
+				VertexAndTextureData[size*size*3+(i*size+j)*2 + 1] = (GLfloat)((i)/float(size));
 			}
 		glGenBuffers(1,&dataVBO);
 		glBindBuffer(GL_ARRAY_BUFFER, dataVBO);
@@ -101,15 +105,15 @@ void region::Triangulate(int detail)
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, count*sizeof(int), TriangleData[detail], GL_STATIC_DRAW);
 	}	
 }
-/*
-void region::doPatch(int patchx,int patchy)
+
+void region::doPatch()
 {
   int texture_step = size / patch_steps;
 //Three heightmap points below where we are
-  int startx = texX * texture_step - 3;
-  int starty = texY * texture_step - 3;
-  int endx = startx + texture_step + 5;
-  int endy = starty + texture_step + 6;
+  int startx =  - 3;
+  int starty =  - 3;
+  int endx =  size + 3;
+  int endy = size + 3;
   glColor3f(1,0,0);
   glBindTexture(GL_TEXTURE_2D,getTerrainTexture(SURFACE_ROCK));
   for (int y = starty; y < endy - 1; y++)
@@ -179,12 +183,12 @@ void region::doPatch(int patchx,int patchy)
 
 
 
-}*/
+}
 
 
 void region::doNextTexture()
 {
-	#define TEXTURE_SIZE 2048
+fprintf(stderr,"T");
   if (finishedTexture)
 	return;
 
@@ -193,25 +197,57 @@ void region::doNextTexture()
 	glGenTextures(1, &TextureNumber);
 	glBindTexture(GL_TEXTURE_2D, TextureNumber);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
   }
-
+  return;
   
   int viewport [4];
   glGetIntegerv(GL_VIEWPORT,viewport);
 
+
+  //Create renderbuffer
+  GLuint rboId;
+  glGenRenderbuffers(1, &rboId);
+  glBindRenderbuffer(GL_RENDERBUFFER, rboId);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+                      TEXTURE_SIZE, TEXTURE_SIZE);
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  //Create framebuffer
   GLuint fboId;
   glGenFramebuffers(1, &fboId);
   glBindFramebuffer(GL_FRAMEBUFFER, fboId);
+  // attach the texture to FBO color attachment point
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                       GL_TEXTURE_2D, TextureNumber, 0);
 
+  // attach the renderbuffer to depth attachment point
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                          GL_RENDERBUFFER, rboId);
+  assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+  glBindFramebuffer(GL_FRAMEBUFFER, fboId);
 
+  // draw...
+  RenderCanvasBegin (0,size,0,size,TEXTURE_SIZE);
+  glClearColor (skyColor[0],skyColor[1],skyColor[2],skyColor[3]);
+	
+  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  glColor3f(0,0,1);
+  doPatch();
+  RenderCanvasEnd();
 
+  //Cleanup
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glBindTexture(GL_TEXTURE_2D,TextureNumber);
+  glGenerateMipmap(GL_TEXTURE_2D);
+  glDeleteRenderbuffers(1, &rboId);
+  glDeleteFramebuffers(1, &fboId);
+
   glViewport(viewport[0],viewport[1],viewport[2],viewport[3]);
   finishedTexture = true;
+  fprintf(stderr,"X");
 }
 
 void region::Render(int detail)
@@ -233,7 +269,7 @@ void region::Render(int detail)
   					  GL_FLOAT,
   					  0,
   					  (void*)(size*size*3*sizeof(float)));
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_2D, TextureNumber);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,indexVBO);
 	glDrawElements( GL_TRIANGLES, //mode
                   numTri[detail],  //count, ie. how many indices

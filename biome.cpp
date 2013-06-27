@@ -66,6 +66,10 @@ biomeSystem::biomeSystem()
 			biomes[i][j].grassColor[0] += rand()%30 - 15 + 255;biomes[i][j].grassColor[0]%=255;
 			biomes[i][j].grassColor[1] += rand()%30 - 15 + 255;biomes[i][j].grassColor[1]%=255;
 			biomes[i][j].grassColor[2] += rand()%10 - 5 + 255;biomes[i][j].grassColor[2]%=255;
+
+			biomes[i][j].grassColor[0] = rand()%256;
+			biomes[i][j].grassColor[1] =rand()%256;
+			biomes[i][j].grassColor[2] =rand()%256;
 			
 			biomes[i][j].topography = (biomes[i][j].climate!=CL_COASTAL)?(rand()%100)/100.0f:0;
 			biomes[i][j].detail     = (rand()%100)/100.0f;
