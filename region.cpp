@@ -125,11 +125,11 @@ void region::doPatch()
       int world_y = origin_y + y;
       glTexCoord2f ((float)x / 8, (float)y / 8);
 	  float* surface_color = parent->getSAt(world_x, world_y)->colour;
-      glColor3f (surface_color[0]/256,surface_color[1]/256,surface_color[2]/256);
+      glColor3f (1,1,1);
       glVertex2f ((float)x, (float)y);
       glTexCoord2f ((float)x / 8, (float)(y + 1) / 8);
       surface_color = parent->getSAt(world_x, world_y+1)->colour;
-      glColor3f (surface_color[0]/256,surface_color[1]/256,surface_color[2]/256);
+      glColor3f (1,1,1);
       glVertex2f ((float)x, (float)(y + 1));
     }
     glEnd ();
@@ -137,6 +137,8 @@ void region::doPatch()
 
   for (int stage = 0; stage < TERRAIN_COUNT; stage++) 
   {
+	if (stage == SURFACE_ROCK)
+		continue;
     glBindTexture (GL_TEXTURE_2D, getTerrainTexture(stage));
 	glTexParameteri (GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);	
     glTexParameteri (GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);	
@@ -154,21 +156,20 @@ void region::doPatch()
         float posy = (float)y;
         float tile = 0.66f*1.5; 
         glPushMatrix ();
-        glTranslatef (posx - 0.5f, posy - 0.5f, 0);
+        glTranslatef (posx + 1.0f, posy + 1.0f, 0);
 		//Do some funky rotation, please
         int angle = (world_x + world_y * 1000007) * 25;
         angle %= 360;
         glRotatef ((float)angle, 0.0f, 0.0f, 1.0f);
 		//Move us to here please
         glTranslatef (-posx, -posy, 0);
-		float lightingMultiplyer = Vector3(parent->getSAt(world_y, world_x)->normal).dot(Vector3(1,1,0));
 		if (surfaceNumber == SURFACE_GRASS)
 		{
 			float* surface_color = parent->getSAt(world_y, world_x)->colour;
-			glColor3f (surface_color[0]/256*lightingMultiplyer,surface_color[1]/256*lightingMultiplyer,surface_color[2]/256*lightingMultiplyer);
+			glColor3f (surface_color[0]/256,surface_color[1]/256,surface_color[2]/256);
 		}
 		else
-			glColor3f (lightingMultiplyer,lightingMultiplyer,lightingMultiplyer);
+			glColor3f (1,1,1);
         glBegin (GL_QUADS);
         glTexCoord2f (0,0); glVertex2f (posx - tile, posy - tile);
         glTexCoord2f (1,0); glVertex2f (posx + tile, posy - tile);
@@ -202,7 +203,6 @@ fprintf(stderr,"T");
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
   }
-  return;
   
   int viewport [4];
   glGetIntegerv(GL_VIEWPORT,viewport);
