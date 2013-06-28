@@ -104,14 +104,14 @@ void World::Render(float x, float y)
 			float thisDetail = renderDetail - dist((*it2)->origin_x,(*it2)->origin_y,x,y) / (2*regionSize);
 			(*it2)->Render(max(3,(int)thisDetail));
 		}
-	/*
+	
 	for (list<list<region*> >::iterator it = visibleRegions.begin();it!=visibleRegions.end();it++)
 		for (list<region*>::iterator it2 = (*it).begin(); it2!=(*it).end() ; it2++)
 		{
-			float thisDetail = renderDetail - dist((*it2)->x,(*it2)->y,x,y) / (2*regionSize);
+			float thisDetail = renderDetail - dist((*it2)->origin_x,(*it2)->origin_y,x,y) / (2*regionSize);
 			(*it2)->RenderGrass(max(3,(int)thisDetail));
 		}
-	*/
+	
 	dataBook->deleteUnused();
 		
 	// GUI INTERESTING INFO
