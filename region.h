@@ -29,8 +29,8 @@ class region
 		int bestDetail;
 		int getIndex(int,int);
 		vector<grass> grasses;
-		bool finishedTexture;
-		void doNextTexture();
+		int lastTexture;
+		void doNextTexture(int);
 		void doPatch();
 		int texX;
 		int texY;

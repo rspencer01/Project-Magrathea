@@ -11,7 +11,8 @@
 #include <stdio.h>
 
 
-#define TEXTURE_SIZE 2048
+#define MAX_TEXTURE_SIZE 2048
+
 //
 // Contains the code for the render regions: blocks of terrain that have one texture draped over them.
 //
@@ -26,7 +27,7 @@ region::region(int _size,int _x,int _y,World* _parent)
 	TriangleData = NULL;
 	numTri = NULL;
 	bestDetail = -1;
-	finishedTexture = false;
+	lastTexture = -1;
 	TextureNumber = -1;
 	texX = texY = 0;
 	dataVBO = -1;
@@ -186,38 +187,39 @@ void region::doPatch()
 
 }
 
+  GLuint fboId = -1;
+  GLuint rboId = -1;
 
-void region::doNextTexture()
+void region::doNextTexture(int detail)
 {
-fprintf(stderr,"T");
-  if (finishedTexture)
+  if (lastTexture == detail)
 	return;
+  printf("New texture of detail %d\n",detail);
+  if (TextureNumber!=-1)
+	  glDeleteTextures(1,&TextureNumber);
+  int textureSize = min(MAX_TEXTURE_SIZE,1<<detail);
+  glGenTextures(1, &TextureNumber);
+  glBindTexture(GL_TEXTURE_2D, TextureNumber);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSize, textureSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
-  if (TextureNumber==-1)
-  {
-	glGenTextures(1, &TextureNumber);
-	glBindTexture(GL_TEXTURE_2D, TextureNumber);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-  }
-  
   int viewport [4];
   glGetIntegerv(GL_VIEWPORT,viewport);
 
 
   //Create renderbuffer
-  GLuint rboId;
-  glGenRenderbuffers(1, &rboId);
+  if (rboId==-1)
+	glGenRenderbuffers(1, &rboId);
   glBindRenderbuffer(GL_RENDERBUFFER, rboId);
   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
-                      TEXTURE_SIZE, TEXTURE_SIZE);
+                      textureSize, textureSize);
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
   //Create framebuffer
-  GLuint fboId;
-  glGenFramebuffers(1, &fboId);
+  if (fboId==-1)
+	glGenFramebuffers(1, &fboId);
   glBindFramebuffer(GL_FRAMEBUFFER, fboId);
   // attach the texture to FBO color attachment point
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
@@ -226,11 +228,10 @@ fprintf(stderr,"T");
   // attach the renderbuffer to depth attachment point
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                           GL_RENDERBUFFER, rboId);
-  assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
   glBindFramebuffer(GL_FRAMEBUFFER, fboId);
 
   // draw...
-  RenderCanvasBegin (0,size,0,size,TEXTURE_SIZE);
+  RenderCanvasBegin (0,size,0,size,textureSize);
   glClearColor (skyColor[0],skyColor[1],skyColor[2],skyColor[3]);
 	
   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
@@ -239,21 +240,23 @@ fprintf(stderr,"T");
   RenderCanvasEnd();
 
   //Cleanup
+  const GLenum discards[]  = {GL_COLOR_ATTACHMENT0};
+  
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glBindTexture(GL_TEXTURE_2D,TextureNumber);
-  glGenerateMipmap(GL_TEXTURE_2D);
-  glDeleteRenderbuffers(1, &rboId);
-  glDeleteFramebuffers(1, &fboId);
+  //glGenerateMipmap(GL_TEXTURE_2D);
+  //glDeleteRenderbuffers(1, &rboId);
+  //glDeleteFramebuffers(1, &fboId);
 
   glViewport(viewport[0],viewport[1],viewport[2],viewport[3]);
-  finishedTexture = true;
-  fprintf(stderr,"X");
+  lastTexture = detail;
 }
 
 void region::Render(int detail)
 {
-	if (!finishedTexture)
-		doNextTexture();
+	if (detail>12)
+		detail = 12;
+	doNextTexture(detail);
 	Triangulate(detail);
 
 
