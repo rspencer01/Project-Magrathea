@@ -32,6 +32,7 @@ region::region(int _size,int _x,int _y,World* _parent)
 	texX = texY = 0;
 	dataVBO = -1;
 	initialised = false;
+	gotGrass = false;
 }
 
 region::~region()
@@ -292,6 +293,16 @@ void region::Render(int detail)
 
 void region::RenderGrass(int detail)
 {
+	if (!gotGrass)
+	{
+		for (int y = 0;y<size;y++)
+			for (int x = 0;x<size;x++)
+				if (parent->getSAt(origin_y+y,origin_x+x)->isGrass)
+				{
+					grasses.push_back(grass(Vector3(origin_x+x,parent->getSAt(origin_y+y,origin_x+x)->elevation,origin_y+y),Vector3(parent->getSAt(origin_y+y,origin_x+x)->normal),parent,parent->getSAt(origin_y+y,origin_x+x)->grassHeight));
+				}
+	}
+	gotGrass = true;
 	if (detail > 7)
 		for (unsigned int i = 0;i<grasses.size();i++)
 			grasses[i].Render();		

@@ -39,6 +39,7 @@ class region
 		GLuint dataVBO;
 		GLuint indexVBO;
 		bool initialised;
+		bool gotGrass;
 	public:
 		int origin_x,origin_y;
 		float* altitudes;
