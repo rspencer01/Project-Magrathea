@@ -1,7 +1,7 @@
 CPP=g++
 FLAGS = -g
-obj = main.o camera.o heightmap.o region.o biome.o noise.o vector3.o world.o graphics.o misc.o terrain.o textures.o erosion.o book.o page.o sky.o grass.o
-lib = -lglut -lGLU
+obj = camera.o heightmap.o biome.o noise.o vector3.o world.o graphics.o misc.o terrain.o textures.o erosion.o book.o page.o sky.o grass.o region.o main.o
+lib = -lglut -lGLU -lGLEW
 
 all: $(obj)
 	$(CPP) $(obj) $(lib) $(FLAGS) -o a
