@@ -1,4 +1,5 @@
 #include <GL/glew.h>
+#include <GL/gl.h>
 #include "region.h"
 #include "graphics.h"
 #include "terrain.h"
@@ -72,9 +73,10 @@ void region::Triangulate(int detail)
 				VertexAndTextureData[size*size*3+(i*size+j)*2 + 0] = (GLfloat)((j)/float(size));
 				VertexAndTextureData[size*size*3+(i*size+j)*2 + 1] = (GLfloat)((i)/float(size));
 			}
-		glGenBuffers(1,&dataVBO);
-		glBindBuffer(GL_ARRAY_BUFFER, dataVBO);
-		glBufferData(GL_ARRAY_BUFFER, size*size*5*sizeof(float), VertexAndTextureData,GL_STATIC_DRAW);
+		glewInit();
+		glGenBuffersARB(1,&dataVBO);
+		glBindBufferARB(GL_ARRAY_BUFFER, dataVBO);
+		glBufferDataARB(GL_ARRAY_BUFFER, size*size*5*sizeof(float), VertexAndTextureData,GL_STATIC_DRAW);
 		delete[] VertexAndTextureData;
 		
 	}
@@ -102,15 +104,14 @@ void region::Triangulate(int detail)
 				TriangleData[detail][count++] = ((i-adetail)*size)+j-adetail;
 			}		
 		numTri[detail] = count;
-		glGenBuffers(1,&indexVBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexVBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, count*sizeof(int), TriangleData[detail], GL_STATIC_DRAW);
+		glGenBuffersARB(1,&indexVBO);
+		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, indexVBO);
+		glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, count*sizeof(int), TriangleData[detail], GL_STATIC_DRAW);
 	}	
 }
 
 void region::doPatch()
 {
-  int texture_step = size / patch_steps;
 //Three heightmap points below where we are
   int startx =  - 3;
   int starty =  - 3;
@@ -264,7 +265,7 @@ void region::Render(int detail)
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glColor3f(1,1,1);
-	glBindBuffer(GL_ARRAY_BUFFER,dataVBO);
+	glBindBufferARB(GL_ARRAY_BUFFER,dataVBO);
 	glVertexPointer( 3,   //3 components per vertex (x,y,z)
                  GL_FLOAT,
                  0,
@@ -274,14 +275,14 @@ void region::Render(int detail)
   					  0,
   					  (void*)(size*size*3*sizeof(float)));
 	glBindTexture(GL_TEXTURE_2D, TextureNumber);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,indexVBO);
+	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER,indexVBO);
 	glDrawElements( GL_TRIANGLES, //mode
                   numTri[detail],  //count, ie. how many indices
                   GL_UNSIGNED_INT, //type of the index array
                   0);
   
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
-	glBindBuffer(GL_ARRAY_BUFFER,0);
+	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER,0);
+	glBindBufferARB(GL_ARRAY_BUFFER,0);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	
