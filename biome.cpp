@@ -119,10 +119,8 @@ biomeSystem::biomeSystem()
 
 biomeData* biomeSystem::getAt(int y,int x)
 {
-	if (y== WORLD_SIZE)
-		y--;
-	if (x== WORLD_SIZE)
-		x--;
+	y += noise(x*y,y)*10-5;
+	x += noise(x*y,x)*10-5;
 	int nx = x/biomeSize;
 	int ny = y/biomeSize;
 	//Do this check for heightmap.getat
