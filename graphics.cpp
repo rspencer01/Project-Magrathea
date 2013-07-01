@@ -54,7 +54,6 @@ void writeString(int x, int y,const char* format, ... )
 	glPushMatrix();
 	glLoadIdentity();
 
-	glColor3f(0.0, 0.0, 0.0); // Green
   
   va_list args;
   char buffer[200], *p;
@@ -64,9 +63,11 @@ void writeString(int x, int y,const char* format, ... )
   va_end(args);
   
   glRasterPos2i(x,glutGet(GLUT_WINDOW_HEIGHT)-y);
-  
+ 	glDisable(GL_FOG); 
+	glColor3f(0.0, 0.0, 0.0); 
   for (p = buffer; *p; p++)
     glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *p);
+  glEnable(GL_FOG);
 	
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
