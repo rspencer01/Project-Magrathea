@@ -104,7 +104,7 @@ void page::DoSurface()
 
 
 			float rockCutoff = 0.80;
-			float dirtCutoff = 0.90 + max((1-(parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->moisture-0.3f)*3),0.f)*0.10;
+			float dirtCutoff = 0.70 + max((1-(parentW->getBiomeAt(y+origY*PAGE_SIZE,x+origX*PAGE_SIZE)->moisture-0.3f)*3),0.f)*0.30;
 			if (data[y][x].normal[1] < dirtCutoff)
 				data[y][x].surfaceType = SURFACE_DIRT;
 			for (int dy = max(y-1,0);dy<min(y+2,PAGE_SIZE);dy++)

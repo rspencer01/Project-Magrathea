@@ -128,7 +128,7 @@ void entropy_erode (float* emap)
     memcpy (emap, buffer, sizeof (float) * EROSION_SIZE * EROSION_SIZE);
   }
 
-#define BLUR_RADIUS 2
+#define BLUR_RADIUS 0
   //Blur the elevations a bit to round off little spikes and divots.
   for (y = 0; y < EROSION_SIZE; y++) {
     for (x = 0; x < EROSION_SIZE; x++) {
