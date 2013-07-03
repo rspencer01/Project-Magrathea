@@ -36,7 +36,7 @@ int main(int argc, char**argv)
 	
 	glutInit(&argc,argv);
 	
-	glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
+	glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA|GLUT_DEPTH);
 	glutInitWindowSize(500,500);
 	glutInitWindowPosition(100,100);
 	glutCreateWindow("Terrain");
@@ -55,8 +55,8 @@ int main(int argc, char**argv)
 	}
 
 
-
 	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 
 	glEnable ( GL_COLOR_MATERIAL ) ;
 	glEnable( GL_TEXTURE_2D );

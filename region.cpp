@@ -97,8 +97,8 @@ void region::Triangulate(int detail)
 			for (int j = adetail;j<size;j+=adetail)
 			{
 				TriangleData[detail][count++] = (i*size)+j;
-				TriangleData[detail][count++] = (i*size)+j-adetail;
 				TriangleData[detail][count++] = ((i-adetail)*size)+j-adetail;
+				TriangleData[detail][count++] = (i*size)+j-adetail;
 				TriangleData[detail][count++] = (i*size)+j;
 				TriangleData[detail][count++] = ((i-adetail)*size)+j;
 				TriangleData[detail][count++] = ((i-adetail)*size)+j-adetail;
@@ -246,9 +246,6 @@ void region::doNextTexture(int detail)
   
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glBindTexture(GL_TEXTURE_2D,TextureNumber);
-  //glGenerateMipmap(GL_TEXTURE_2D);
-  //glDeleteRenderbuffers(1, &rboId);
-  //glDeleteFramebuffers(1, &fboId);
 
   glViewport(viewport[0],viewport[1],viewport[2],viewport[3]);
   lastTexture = detail;
@@ -261,10 +258,8 @@ void region::Render(int detail)
 	doNextTexture(detail);
 	Triangulate(detail);
 
-
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glColor3f(1,1,1);
 	glBindBufferARB(GL_ARRAY_BUFFER,dataVBO);
 	glVertexPointer( 3,   //3 components per vertex (x,y,z)
                  GL_FLOAT,
@@ -287,9 +282,6 @@ void region::Render(int detail)
 	glDisableClientState(GL_VERTEX_ARRAY);
 	
 	addTriangles(numTri[detail]/3);
-	
-
-	
 }
 
 void region::RenderGrass(int detail)
