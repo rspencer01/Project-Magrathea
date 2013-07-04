@@ -5,6 +5,7 @@
 
 void RenderSky(float x, float z)
 {
+	glDisable(GL_DEPTH_TEST);
 	// No textures please
 	glBindTexture(GL_TEXTURE_2D,0);
 	// We will make a cone of triangles
@@ -14,9 +15,10 @@ void RenderSky(float x, float z)
 	glVertex3f(x,400.f,z);
 	glColor3fv(skyColor);
 	// The sin and cos describes a circe surrounding the given position.
-	for (int i = 0;i<=21;i++)
+	for (int i = 21;i>=0;i--)
 		glVertex3f(x+1000*sin(i/20.f*3.1415*2),0.f,z+1000*cos(i/20.f*3.1415*2));
 	glEnd();
 	// And just for the hell of it, tell me how many triangles this contributes to the total.
 	addTriangles(21);
+	glEnable(GL_DEPTH_TEST);
 }
