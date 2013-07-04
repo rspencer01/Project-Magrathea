@@ -45,6 +45,7 @@ class biomeSystem
 		int biomeSize;
 		biomeSystem();
 		biomeData* getAt(int,int);		
+		biomeData* getExactAt(int,int);
 };
 
 #endif

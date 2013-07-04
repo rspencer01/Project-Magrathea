@@ -121,6 +121,12 @@ biomeData* biomeSystem::getAt(int y,int x)
 {
 	y += noise(x*y,y)*10-5;
 	x += noise(x*y,x)*10-5;
+	return getExactAt(x,y);
+}
+
+
+biomeData* biomeSystem::getExactAt(int y,int x)
+{
 	int nx = x/biomeSize;
 	int ny = y/biomeSize;
 	//Do this check for heightmap.getat
@@ -134,9 +140,4 @@ biomeData* biomeSystem::getAt(int y,int x)
 	}
 	return &biomes[nx][ny];
 }
-/*
-int main()
-{
-	biomeSystem();
-	
-}*/
+

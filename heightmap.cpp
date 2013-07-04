@@ -38,14 +38,13 @@ float ci(float a,float b, float x)
 
 float heightMap::getAt(int y,int x)
 {
-	
-	int bs = biomes->biomeSize;
+	int bs = biomes->biomeSize; 	
 	assert(y>=0 && y<=WORLD_SIZE);
 	assert(x>=0 && x<=WORLD_SIZE);
-	biomeData* bd = biomes->getAt(x,y);
-	biomeData* bd2 = biomes->getAt(x,y+bs);
-	biomeData* bd3 = biomes->getAt(x+bs,y);
-	biomeData* bd4 = biomes->getAt(x+bs,y+bs);
+	biomeData* bd = biomes->getExactAt(x,y);
+	biomeData* bd2 = biomes->getExactAt(x,y+1);
+	biomeData* bd3 = biomes->getExactAt(x+1,y);
+	biomeData* bd4 = biomes->getExactAt(x+1,y+1);
 	float fx = (x%bs)/float(bs);
 	float fy = (y%bs)/float(bs);
 
