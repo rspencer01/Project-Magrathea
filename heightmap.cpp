@@ -42,26 +42,26 @@ float heightMap::getAt(int y,int x)
 	assert(y>=0 && y<=WORLD_SIZE);
 	assert(x>=0 && x<=WORLD_SIZE);
 	biomeData* bd = biomes->getExactAt(x,y);
-	biomeData* bd2 = biomes->getExactAt(x,y+1);
-	biomeData* bd3 = biomes->getExactAt(x+1,y);
-	biomeData* bd4 = biomes->getExactAt(x+1,y+1);
+	biomeData* bd2 = biomes->getExactAt(x,y+bs);
+	biomeData* bd3 = biomes->getExactAt(x+bs,y);
+	biomeData* bd4 = biomes->getExactAt(x+bs,y+bs);
 	float fx = (x%bs)/float(bs);
 	float fy = (y%bs)/float(bs);
 
 	
 
 	float detail = 2*getErosionData(float(x*2.f),float(y*2.f));
-	
+	/*
 	if (bd->flags & FORM_BUTTE)
 		if (detail >1.2)
 			detail = 2+detail;
 	if (bd->flags & FORM_CRATER)
 		if (detail >1.0)
 			detail = -detail;
-	
+	*/
 
 	float terrainMultiplyer = (linearInterpolate(linearInterpolate(bd->topography,bd2->topography,fy),linearInterpolate(bd3->topography,bd4->topography,fy),fx));
-	float terrain = 45*terrainMultiplyer*getErosionData(float(x/5.f),float(y/5.f));
+	float terrain = 45*getErosionData(float(x/5.f),float(y/5.f));
 	float bias = 70*(cosineInterpolate(cosineInterpolate(bd->baseLevel,bd2->baseLevel,fy),cosineInterpolate(bd3->baseLevel,bd4->baseLevel,fy),fx));
-	return  terrain + detail + bias;
+	return  0*terrain + detail + bias;
 }

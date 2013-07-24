@@ -22,7 +22,7 @@ void initErosion()
 	unsigned char* data = loadRaw("erode.raw",EROSION_SIZE);
 	for (int i = 0;i<EROSION_SIZE;i++)
 		for (int j = 0;j<EROSION_SIZE;j++)
-			erosionData[i*EROSION_SIZE+j] = data[(i*EROSION_SIZE+j)*3]/256.0;
+			erosionData[i*EROSION_SIZE+j] = perlinNoise(float(i)/EROSION_SIZE,float(j)/EROSION_SIZE,8,1);//data[(i*EROSION_SIZE+j)*3]/256.0;
 	entropy_erode(erosionData);
 	FILE* result = fopen("eroded.raw","wb");
 	for (int i = 0;i<EROSION_SIZE*EROSION_SIZE;i++)
@@ -51,6 +51,7 @@ float getErosionDatai(int x,int y)
 
 float getErosionData(float x,float y)
 {
+  return getErosionDatai(int(x),int(y));
 	float data[4][5];
 	for (int i = 0;i<4;i++)
 		for (int j = 0;j<4;j++)
@@ -63,6 +64,7 @@ float getErosionData(float x,float y)
 void entropy_erode (float* emap)
 {
   normalise(emap,EROSION_SIZE*EROSION_SIZE);
+  return;
   float*  buffer;
   int     x, y;
   float   low, high, val;

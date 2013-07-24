@@ -161,7 +161,7 @@ void region::doPatch()
         glPushMatrix ();
         glTranslatef (posx + 1.0f, posy + 1.0f, 0);
 		//Do some funky rotation, please
-        int angle = (world_x + world_y * 1000007) * 25;
+        int angle = (world_x + world_y * 1000007) * 25*world_x*world_y;
         angle %= 360;
         glRotatef ((float)angle, 0.0f, 0.0f, 1.0f);
 		//Move us to here please
