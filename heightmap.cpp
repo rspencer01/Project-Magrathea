@@ -38,6 +38,18 @@ float ci(float a,float b, float x)
 
 float heightMap::getAt(int y,int x)
 {
+	//We will use real data for now...
+	if (y>10811 || y<0)
+		if (x>10811 || x<0)
+			return 1;
+	FILE* fp = fopen("heights.dat","rb");
+	fseek(fp,(y*10812+x)*4,SEEK_SET);
+	float f;
+	fread(&f,4,1,fp);
+	fclose(fp);
+	//printf("Height %f\n",f);
+	return f/3;
+	/*
 	int bs = biomes->biomeSize; 	
 	assert(y>=0 && y<=WORLD_SIZE);
 	assert(x>=0 && x<=WORLD_SIZE);
@@ -59,9 +71,10 @@ float heightMap::getAt(int y,int x)
 		if (detail >1.0)
 			detail = -detail;
 	*/
-
+	/*
 	float terrainMultiplyer = (linearInterpolate(linearInterpolate(bd->topography,bd2->topography,fy),linearInterpolate(bd3->topography,bd4->topography,fy),fx));
 	float terrain = 45*getErosionData(float(x/5.f),float(y/5.f));
 	float bias = 70*(cosineInterpolate(cosineInterpolate(bd->baseLevel,bd2->baseLevel,fy),cosineInterpolate(bd3->baseLevel,bd4->baseLevel,fy),fx));
 	return  0*terrain + detail + bias;
+	*/
 }

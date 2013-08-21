@@ -9,6 +9,7 @@
 *.pui
 *.bmp
 *.bak
+*.dat
 v*/
 Shamus/
 OpenGL-tutorial_v0012_33/
